@@ -1,0 +1,67 @@
+
+########## 安装了sentinel的cluster ##########
+准备三份sentinel.conf，按如下修改 sentinel.conf：
+
+sentinel monitor mymaster 192.168.2.130 6381 2
+sentinel announce-ip 192.168.2.130
+sentinel announce-port 26381
+sentinel auth-pass 123456
+daemonize yes
+
+sentinel monitor mymaster 192.168.2.130 6381 2
+sentinel announce-ip 192.168.2.130
+sentinel announce-port 26382
+sentinel auth-pass 123456
+daemonize yes
+
+
+sentinel monitor mymaster 192.168.2.130 6381 2
+sentinel announce-ip 192.168.2.130
+sentinel announce-port 26383
+sentinel auth-pass 123456
+daemonize yes
+
+
+sentinel monitor... 描述了主节点的信息，2表示需要 2 个 Sentinel 实例同意主节点已下线才会执行故障转移。
+announce的内容用于告知其他 Sentinel 或者客户端如何连接到当前的 Sentinel 实例
+
+
+sentinel是作为容器来运行的，所以需要启动3个sentinel：
+
+docker run --name mysentinel-1 \
+-v /root/redis/sentinel1.conf:/etc/redis/sentinel.conf \
+-dp 26381:26379 \
+redis:7.0 \
+redis-sentinel /etc/redis/sentinel.conf
+
+docker run --name mysentinel-2 \
+-v /root/redis/sentinel2.conf:/etc/redis/sentinel.conf \
+-dp 26382:26379 \
+redis:7.0 \
+redis-sentinel /etc/redis/sentinel.conf
+
+docker run --name mysentinel-3 \
+-v /root/redis/sentinel3.conf:/etc/redis/sentinel.conf \
+-dp 26383:26379 \
+redis:7.0 \
+redis-sentinel /etc/redis/sentinel.conf
+
+
+// 查看集群sentinel信息
+docker exec -it mysentinel-1 redis-cli -h 192.168.162.105 -p 26381 info sentinel
+
+// 进行一下故障转移测试
+docker stop myredis-1 // 下线master
+过一会就可以看到
+docker exec -it myredis-2 redis-cli info replication
+会有新的master接替
+把原来的master再次启动
+docker start myredis-1
+会发现变成别人的slave
+
+
+// 正因为这种，master替换的机制，从节点就不宜采用可写模式，因为那无法保证各个节点的数据一致性，这在替换master之后，数据的不一致就是体现给用户
+
+
+
+ docker exec mysentinel-1 redis-cli -p 26379 sentinel get-master-addr-by-name mymaster

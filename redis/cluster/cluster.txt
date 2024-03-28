@@ -1,0 +1,47 @@
+docker pull redis:7.0
+
+################### 哨兵模式 #####################
+该模式是建立在主从复制模式之上的，使用sentinel进行高可用配置，当主服务器挂掉，从服务器自动升为主服务器。
+sentinel最好不要和Redis部署在同一台机器，不然Redis的服务器挂了以后，sentinel也挂了
+##################################################
+
+// 存放外挂的redis配置文件目录
+mkdir -p /root/redis/data/6381
+mkdir -p /root/redis/data/6382
+mkdir -p /root/redis/data/6383
+
+// 注释掉bind
+// 设置为 protected-mode no
+// 设置为 protected-mode no
+// dir path/to/youdata 设置数据保存路径
+
+// 启动master
+docker run --name myredis-1 \
+-v /root/redis/redis1.conf:/etc/redis/redis.conf \
+-v /root/redis/data/6381:/data \
+-dp 6381:6379 \
+redis:7.0 \
+redis-server /etc/redis/redis.conf
+
+// 启动slave
+docker run --name myredis-2 \
+-v /root/redis/redis2.conf:/etc/redis/redis.conf \
+-v /root/redis/data/6382:/data \
+-dp 6382:6379 \
+redis:7.0 \
+redis-server /etc/redis/redis.conf --slaveof 192.168.2.130 6381
+
+docker run --name myredis-3 \
+-v /root/redis/redis3.conf:/etc/redis/redis.conf \
+-v /root/redis/data/6383:/data \
+-dp 6383:6379 \
+redis:7.0 \
+redis-server /etc/redis/redis.conf --slaveof 192.168.2.130 6381
+
+// 查看集群信息
+docker exec -it myredis-1 redis-cli info replication
+
+
+
+
+

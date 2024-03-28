@@ -1,0 +1,29 @@
+################# 安装docker ###################
+
+# 安装工具包
+yum install -y yum-utils
+# 设置源
+yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+# 快速更新
+yum makecache fast
+# 最新版本
+yum install docker-ce docker-ce-cli containerd.io
+# 启动并加入开机启动
+systemctl start docker   #启动
+systemctl enable docker  #自启
+
+vim /etc/docker/daemon.json
+{
+ "registry-mirrors" : [
+   "https://mirror.ccs.tencentyun.com",
+   "http://registry.docker-cn.com",
+   "http://docker.mirrors.ustc.edu.cn",
+   "http://hub-mirror.c.163.com"
+ ],
+ "insecure-registries" : [
+   "registry.docker-cn.com",
+   "docker.mirrors.ustc.edu.cn"
+ ],
+ "debug" : true,
+ "experimental" : true
+}

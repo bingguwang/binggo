@@ -16,7 +16,7 @@ func TestClientInit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	fmt.Println("connected etcd")
 	defer cli.Close()
 }
 

@@ -1,0 +1,48 @@
+docker pull redis:7.0
+
+########## 主从复制模式 ##########
+这种方式严格来说不是集群模式
+slaveof只能在主从复制模式使用，不能在集群模式用
+
+
+// 存放外挂的redis配置文件目录
+mkdir -p /root/redis/data/6381
+mkdir -p /root/redis/data/6382
+mkdir -p /root/redis/data/6383
+
+// 注释掉bind
+// 设置为 protected-mode no
+// dir path/to/youdata 设置数据保存路径
+
+// 启动master
+docker run --name myredis-1 \
+-v /root/redis/redis1.conf:/etc/redis/redis.conf \
+-v /root/redis/data/6381:/data \
+-dp 6381:6379 \
+redis:7.0 \
+redis-server /etc/redis/redis.conf
+
+// 启动slave
+docker run --name myredis-2 \
+-v /root/redis/redis2.conf:/etc/redis/redis.conf \
+-v /root/redis/data/6382:/data \
+-dp 6382:6379 \
+redis:7.0 \
+redis-server /etc/redis/redis.conf --slaveof 192.168.2.130 6381
+
+docker run --name myredis-3 \
+-v /root/redis/redis3.conf:/etc/redis/redis.conf \
+-v /root/redis/data/6383:/data \
+-dp 6383:6379 \
+redis:7.0 \
+redis-server /etc/redis/redis.conf --slaveof 192.168.2.130 6381
+
+// 查看集群信息
+docker exec -it myredis-1 redis-cli info replication
+
+// 一般只有master可以写入数据，从master写入的数据会同步到slave，而且slave一般设为只读
+（因为如果从节点进行了写入操作，写入的数据将不会传播到其他从节点，而只会留在该节点上。这可能会导致数据的不一致性和复制延迟问题），
+// master负责处理所有的写入请求和更新操作，并将这些更新操作通过复制流发送给slave
+// slave就相当于只是做了数据备份的作用
+
+// 这种模式没有采用sentinel，一旦master down了，不会自动有新的master来接替

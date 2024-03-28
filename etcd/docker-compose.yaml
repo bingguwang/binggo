@@ -1,0 +1,21 @@
+version: "3.5"
+services:
+  etcd:
+    hostname: etcd
+    image: bitnami/etcd:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    # ports:
+    #   - "2379:2379"
+    #   - "2380:2380"
+    #   - "4001:4001"
+    #   - "7001:7001"
+    user: root
+    volumes:
+      - "/var/docker/etcd/data:/opt/bitnami/etcd/data"
+    environment:
+      - "ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379"
+      - "ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379"
+      - "ETCD_LISTEN_PEER_URLS=htt
