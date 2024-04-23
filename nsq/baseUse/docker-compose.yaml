@@ -1,0 +1,66 @@
+version: "3.7"
+
+# to build a 4 nsqd with 2 nsqlookupd 
+services:
+  nsqlookupd0:
+    image: nsqio/nsq
+    command: /nsqlookupd --broadcast-address=192.168.2.130 --tcp-address=:41600 --http-address=:41610
+    # 41600 是 NSQ 节点间的 TCP 通信端口
+    # 41600 是 nsqlookupd 的 HTTP 端口
+    # 将主机的 41600 端口映射到容器的 41600 端口上
+    # 将主机的 41610 端口映射到容器的 41610 端口上
+    ports:
+      - "41600:41600"
+      - "41610:41610"
+
+  nsqlookupd1:
+    image: nsqio/nsq
+    command: /nsqlookupd --broadcast-address=192.168.2.130 --tcp-address=:41601 --http-address=:41611
+    ports:
+      - "41601:41601"
+      - "41611:41611"
+
+  nsqd0:
+    image: nsqio/nsq
+    command: /nsqd --broadcast-address=192.168.2.130 --tcp-address=:41500 --http-address=:41510 --lookupd-tcp-address=192.168.2.130:41600 --lookupd-tcp-address=192.168.2.130:41601
+    depends_on:
+      - nsqlookupd0
+      - nsqlookupd1
+    ports:
+      - "41500:41500"
+      - "41510:41510"
+  nsqd1:
+    image: nsqio/nsq
+    command: /nsqd --broadcast-address=192.168.2.130 --tcp-address=:41501 --http-address=:41511 --lookupd-tcp-address=192.168.2.130:41600 --lookupd-tcp-address=192.168.2.130:41601
+    depends_on:
+      - nsqlookupd0
+      - nsqlookupd1
+    ports:
+      - "41501:41501"
+      - "41511:41511"
+  nsqd2:
+    image: nsqio/nsq
+    command: /nsqd --broadcast-address=192.168.2.130 --tcp-address=:41502 --http-address=:41512 --lookupd-tcp-address=192.168.2.130:41600 --lookupd-tcp-address=192.168.2.130:41601
+    depends_on:
+      - nsqlookupd0
+      - nsqlookupd1
+    ports:
+      - "41502:41502"
+      - "41512:41512"
+  nsqd3:
+    image: nsqio/nsq
+    command: /nsqd --broadcast-address=192.168.2.130 --tcp-address=:41503 --http-address=:41513 --lookupd-tcp-address=192.168.2.130:41600 --lookupd-tcp-address=192.168.2.130:41601
+    depends_on:
+      - nsqlookupd0
+      - nsqlookupd1
+    ports:
+      - "41503:41503"
+      - "41513:41513"
+
+  nsqadmin:
+    image: nsqio/nsq
+    container_name: nsqadmin
+    command: /nsqadmin --lookupd-http-address=192.168.2.130:41610 --lookupd-http-address=192.168.2.130:41611
+    ports:
+      - "4170-4171:4170-4171"
+# 访问 192.168.2.130:4171就可以看到UI界面
