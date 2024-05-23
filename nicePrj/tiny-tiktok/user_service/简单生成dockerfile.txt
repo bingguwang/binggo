@@ -1,0 +1,5 @@
+
+# 安装一下先
+ GOPROXY=https://goproxy.cn/,direct go install github.com/zeromicro/go-zero/tools/goctl@latest
+# 一键编写 Dockerfile
+ goctl docker -go hello.go

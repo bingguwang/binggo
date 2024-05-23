@@ -1,0 +1,236 @@
+version: '3'
+services:
+
+  user-service:
+    image: 192.168.2.130:5000/binggu--user_service:0.1.0
+    container_name: user-service
+    hostname: user-service
+    depends_on:
+      - user-service-db
+#      - etcd
+    #    command: ["sh","wait-for-it.sh", "user-service-db:3306", "--", "./configs" ]
+    command: [ "./main" ]
+    networks:
+      - tiktok
+
+
+  user-service-db:
+    image: mysql:5.7
+    hostname: user-service-db
+    container_name: mysql-5.7-user-service-db
+    privileged: true
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_PASS: 123456
+      TZ: Asia/Shanghai
+    command:
+      --wait_timeout=31536000
+      --interactive_timeout=31536000
+      --max_connections=1000
+      --default-authentication-plugin=mysql_native_password
+    volumes:
+      #映射mysql的数据目录到宿主机，保存数据
+      - "/app/mysql-user-service/data:/var/lib/mysql"
+      #根据宿主机下的配置文件创建容器
+      - "/app/mysql-user-service/conf/my.cnf:/etc/mysql/my.cnf"
+    networks:
+      - tiktok
+
+  #  user-service:
+  #    image: 1.14.163.5:5000/bingfood/bingfood-user-service:0.1.0
+  #    container_name: bingfood-user-service
+  #    hostname: user-service
+  #    depends_on:
+  #      - user-db
+  #      - etcd
+  #    #    command: ["sh","wait-for-it.sh", "user-db:3306", "--", "./configs" ]
+  #    command: [ "./cmd" ]
+
+#  user-db:
+#    image: mysql:5.7
+#    hostname: user-db
+#    container_name: mysql-5.7-user-db
+#    privileged: true
+#    restart: always
+#    ports:
+#      - "3307:3306"
+#    environment:
+#      MYSQL_ROOT_PASSWORD: 123456
+#      MYSQL_PASS: 123456
+#      TZ: Asia/Shanghai
+#    command:
+#      --wait_timeout=31536000
+#      --interactive_timeout=31536000
+#      --max_connections=1000
+#      --default-authentication-plugin=mysql_native_password
+#    volumes:
+#      #映射mysql的数据目录到宿主机，保存数据
+#      - "/app/mysql-user/data:/var/lib/mysql"
+#      #根据宿主机下的配置文件创建容器
+#      - "/app/mysql-user/conf/my.cnf:/etc/mysql/my.cnf"
+
+  #  order-service:
+  #    image: 1.14.163.5:5000/bingfood/bingfood-user-service:0.1.0
+  #    container_name: bingfood-order-service
+  #    hostname: order-service
+  #    depends_on:
+  #      - order-db
+  #      - etcd
+  #    #    command: ["sh","wait-for-it.sh", "user-db:3306", "--", "./configs" ]
+  #    command: [ "./cmd" ]
+
+#  order-db:
+#    image: mysql:5.7
+#    hostname: order-db
+#    container_name: mysql-5.7-order-db
+#    privileged: true
+#    restart: always
+#    ports:
+#      - "3308:3306"
+#    environment:
+#      MYSQL_ROOT_PASSWORD: 1234
+#      MYSQL_PASS: 1234
+#      TZ: Asia/Shanghai
+#    command:
+#      --wait_timeout=31536000
+#      --interactive_timeout=31536000
+#      --max_connections=1000
+#      --default-authentication-plugin=mysql_native_password
+#    volumes:
+#      #映射mysql的数据目录到宿主机，保存数据
+#      - "/app/mysql-order/data:/var/lib/mysql"
+#      #根据宿主机下的配置文件创建容器
+#      - "/app/mysql-order/conf/my.cnf:/etc/mysql/my.cnf"
+
+
+  #  cart-service:
+  #    image: 1.14.163.5:5000/bingfood/bingfood-cart-service:0.1.0
+  #    container_name: bingfood-cart-service
+  #    hostname: cart-service
+  #    depends_on:
+  #      - cart-db
+  #      - etcd
+  #    #    command: ["sh","wait-for-it.sh", "user-db:3306", "--", "./configs" ]
+  #    command: [ "./cmd" ]
+
+#  cart-db:
+#    image: mysql:5.7
+#    hostname: cart-db
+#    container_name: mysql-5.7-cart-db
+#    privileged: true
+#    restart: always
+#    ports:
+#      - "3309:3306"
+#    environment:
+#      MYSQL_ROOT_PASSWORD: 1234
+#      MYSQL_PASS: 1234
+#      TZ: Asia/Shanghai
+#    command:
+#      --wait_timeout=31536000
+#      --interactive_timeout=31536000
+#      --max_connections=1000
+#      --default-authentication-plugin=mysql_native_password
+#    volumes:
+#      #映射mysql的数据目录到宿主机，保存数据
+#      - "/app/mysql-cart/data:/var/lib/mysql"
+#      #根据宿主机下的配置文件创建容器
+#      - "/app/mysql-cart/conf/my.cnf:/etc/mysql/my.cnf"
+
+
+#  prod-db:
+#    image: mysql:5.7
+#    hostname: prod-db
+#    container_name: mysql-5.7-prod-db
+#    privileged: true
+#    restart: always
+#    ports:
+#      - "3310:3306"
+#    environment:
+#      MYSQL_ROOT_PASSWORD: 1234
+#      MYSQL_PASS: 1234
+#      TZ: Asia/Shanghai
+#    command:
+#      --wait_timeout=31536000
+#      --interactive_timeout=31536000
+#      --max_connections=1000
+#      --default-authentication-plugin=mysql_native_password
+#    volumes:
+#      #映射mysql的数据目录到宿主机，保存数据
+#      - "/app/mysql-prod/data:/var/lib/mysql"
+#      #根据宿主机下的配置文件创建容器
+#      - "/app/mysql-prod/conf/my.cnf:/etc/mysql/my.cnf"
+
+
+
+#  etcd:
+#    image: bitnami/etcd:latest
+#    hostname: etcd
+#    container_name: etcd-service
+#    #    deploy:
+#    #      replicas: 1
+#    #      restart_policy:
+#    #        condition: on-failure
+#    # ports:
+#    #   - "2379:2379"
+#    #   - "2380:2380"
+#    #   - "4001:4001"
+#    #   - "7001:7001"
+#    privileged: true
+#    volumes:
+#      - "/app/etcd/data:/bitnami/etcd/data"
+#    environment:
+#      - "ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379"
+#      - "ALLOW_NONE_AUTHENTICATION=yes"
+#    ports:
+#      - 2379:2379
+#      - 2380:2380
+
+#  redis:
+#    image: redis:6.2.6
+#    hostname: redis
+#    container_name: redis-service
+#    restart: always
+#    privileged: true
+#    volumes:
+#      - "/app/redis/data:/data"
+#      - "/app/redis/conf/redis.conf:/etc/redis/redis.conf"
+#      # redis不具有自动创建logs的权限，需要在redis.conf指定相对位置，才能映射出日志文件
+#      - "/app/redis/logs:/logs"
+#    ports:
+#      - 6379:6379
+#    command: redis-server /etc/redis/redis.conf
+
+
+#  nsqlookupd:
+#    image: nsqio/nsq
+#    container_name: nsqlookupd-service
+#    command: /nsqlookupd
+#    hostname: nsqlookupd
+#    ports:
+#      - "4161:4161"
+#      - "4160:4160"
+#  nsqd:
+#    image: nsqio/nsq:latest
+#    container_name: nsqd-service
+#    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 --data-path=/data --broadcast-address=1.14.163.5
+#    depends_on:
+#      - nsqlookupd
+#    hostname: nsqd
+#    ports:
+#      - "4151:4151"
+#      - "4150:4150"
+#  nsqadmin:
+#    image: nsqio/nsq
+#    container_name: nsqadmin-service
+#    command: /nsqadmin --lookupd-http-address=nsqlookupd:4161
+#    depends_on:
+#      - nsqlookupd
+#    hostname: nsqadmin
+#    ports:
+#      - "4171:4171"
+networks:
+  tiktok:
+    driver: bridge

@@ -7,6 +7,7 @@ import (
 )
 
 // 向指定节点的topic发消息，此时不会创建channel， channel 是在有消费者连接并订阅了主题时才会被创建。
+// 生产者所关心的仅仅是消息放到哪一个topic里，至于如何消费，得消费者定义好之后才能确定
 func main() {
 	nsqAddress := "192.168.2.130:41501"
 	nsqAddress2 := "192.168.2.130:41500"
@@ -39,5 +40,4 @@ func main() {
 		}
 		time.Sleep(10 * time.Second)
 	}
-
 }

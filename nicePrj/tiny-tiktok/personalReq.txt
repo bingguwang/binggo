@@ -1,0 +1,90 @@
+mkdir -p /var/lib/registry
+
+docker pull registry
+
+// 创建认证文件目录
+mkdir -p /var/lib/registry_auth
+
+// 创建 Docker Registry 认证文件
+// 使用 Apache 的 htpasswd 来创建加密文件
+yum install -y httpd-tools
+htpasswd -Bbn admin 123456 > /var/lib/registry_auth/htpasswd
+
+
+docker run -p 5000:5000 \
+--restart=always \
+--name registry \
+-v /var/lib/registry:/var/lib/registry \
+-v /var/lib/registry_auth/:/auth/ \
+-e "REGISTRY_AUTH=htpasswd" \
+-e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
+-e "REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd" \
+-d registry
+
+-p：将本地5000端口映射给容器内的5000端口（Docker Registry默认端口），本地端口可以自定义，只要是空闲的端口即可
+--restart：容器的重启策略
+--name：启动的容器名称
+-v：将本地目录映射到容器内的/var/lib/registry目录
+-d：将容器放到后台运行
+REGISTRY_AUTH=htpasswd # 以 htpasswd 的方式认证
+REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm # 注册认证
+REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd # 认证的用户密码
+
+
+// 查看当前私有仓库里的镜像
+curl http://192.168.2.130:5000/v2/_catalog
+curl http://192.168.2.130:5000/v2/_catalog -u admin
+
+// 加上  "insecure-registries":["192.168.2.130:5050"]
+vi /etc/docker/daemon.json
+{
+ "registry-mirrors" : [
+   "https://mirror.ccs.tencentyun.com",
+   "http://registry.docker-cn.com",
+   "http://docker.mirrors.ustc.edu.cn",
+   "http://hub-mirror.c.163.com"
+ ],
+ "insecure-registries" : [
+   "registry.docker-cn.com",
+   "docker.mirrors.ustc.edu.cn",
+   "192.168.2.130:5000"
+ ],
+ "debug" : true,
+ "experimental" : true
+}
+
+
+systemctl daemon-reload
+systemctl restart docker
+
+// 假设创建一个自己的容器
+docker run -ti --name hello-world -d docker.io/ubuntu
+
+// 从容器创建一个新的镜像
+docker commit -a "binggu" -m "this is test image" hello-world hello-world:v1
+-a :提交的镜像作者；
+-c :使用Dockerfile指令来创建镜像；
+-m :提交时的说明文字；
+-p :在commit时，将容器暂停。
+
+// commit就是把镜像提交到本地，提交到本地后docker images 就可以看到了
+
+
+// 镜像打tag
+docker tag hello-world:v1 192.168.2.130:5000/hello-world:v1.0.1
+
+
+// 可能需要登录
+docker login -u admin -p 123456 192.168.2.130:5000
+
+// 推送镜像
+docker push 192.168.2.130:5000/hello-world:v1.0.1
+--disable-content-trust :忽略镜像的校验,默认开启
+
+
+// 查看镜像
+curl http://192.168.2.130:5000/v2/_catalog
+// 查看镜像版本
+http://192.168.244.5:5000/v2/hello-world/tags/list
+
+
