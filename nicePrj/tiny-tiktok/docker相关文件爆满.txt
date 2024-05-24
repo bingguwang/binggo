@@ -1,0 +1,38 @@
+在docker配置文件里可添加如下配置
+{
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  }
+}
+
+写一个shell文件来清理，如下
+#################################################################################
+
+#!/bin/bash
+
+# 清理未使用的容器
+docker container prune -f
+
+# 清理未使用的镜像
+docker image prune -af
+
+# 清理未使用的卷
+docker volume prune -f
+
+# 清理未使用的网络
+docker network prune -f
+
+# 清理所有停止的容器、未使用的镜像、未使用的卷和未使用的网络
+docker system prune -af
+
+# 清理Docker容器日志
+# 这里假设使用json-file日志驱动，调整大小和保留文件数量
+# 获取每个运行中容器的日志文件路径，然后使用 sudo truncate -s 10M 将日志文件的大小截断为 10M。你可以根据实际需求调整截断大小。
+for container in $(docker ps -q); do
+    docker inspect --format='{{.LogPath}}' $container | xargs sudo truncate -s 10M
+done
+#################################################################################
+定期去执行清理脚本
+0 3 * * * /path/to/docker_clean.sh

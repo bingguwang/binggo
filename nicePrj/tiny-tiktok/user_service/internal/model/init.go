@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm/schema"
 	"time"
 	"tiny-tiktok/user_service/config"
+	log "tiny-tiktok/user_service/pkg/logger"
 )
 
 // DB 创建数据库单例
@@ -35,6 +36,7 @@ func Database(connString string) {
 	} else {
 		ormLogger = logger.Default
 	}
+	log.Log.Info("dns:", connString)
 	db, err := gorm.Open(mysql.New(mysql.Config{
 		DSN:                       connString, // DSN data source name
 		DefaultStringSize:         256,        // string 类型字段的默认长度
@@ -52,6 +54,7 @@ func Database(connString string) {
 	if err != nil {
 		panic(err)
 	}
+	log.Log.Info("Mysql初始化成功!")
 
 	sqlDB, _ := db.DB()
 

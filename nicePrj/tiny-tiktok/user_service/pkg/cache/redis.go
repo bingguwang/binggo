@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/go-redis/redis/v8"
 	"github.com/spf13/viper"
+	log "tiny-tiktok/user_service/pkg/logger"
 )
 
 var Redis *redis.Client
@@ -18,4 +19,5 @@ func InitRedis() {
 		Password: "",
 		DB:       0, // 存入DB0
 	})
+	log.Log.Info("redis初始化完毕!")
 }

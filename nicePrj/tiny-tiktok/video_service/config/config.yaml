@@ -1,12 +1,13 @@
 server:
   name: video_service  # 服务名称
   port: :10002
-  address: 127.0.0.1:10002  # 服务地址
+#  address: 127.0.0.1:10002  # 服务地址
+  address: 0.0.0.0:10000  # 服务地址
 
 
 mysql:
   driver: mysql
-  host: 127.0.0.1
+  host: user-service-db
   port: 3306
   username: root
   password: 123456
@@ -14,7 +15,9 @@ mysql:
 
 
 etcd:
-  address: 127.0.0.1:2379
+#  address: 127.0.0.1:2379
+  address: etcd:2379
+  password: 123456
 
 oss:
   bucketName: tiny-tiktok

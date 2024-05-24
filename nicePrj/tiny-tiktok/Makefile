@@ -5,7 +5,7 @@ APP_RELATIVE_PATH=$(shell a=`basename $$PWD` && cd .. && b=`basename $$PWD` && e
 INTERNAL_PROTO_FILES=$(shell find internal -name *.proto)
 API_PROTO_FILES=$(shell cd ../../../api/$(APP_RELATIVE_PATH) && find . -name *.proto)
 APP_NAME=$(shell echo $(APP_RELATIVE_PATH) | sed -En "s/\//-/p")
-DOCKER_IMAGE=$(shell echo $(APP_NAME) |awk -F '@' '{print "binggu-" $$0 ":0.1.0"}')
+DOCKER_IMAGE=$(shell echo $(APP_NAME) |awk -F '@' '{print "binggu" $$0 ":0.1.0"}')
 
 .PHONY: init
 # init env

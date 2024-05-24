@@ -25,7 +25,14 @@ COPY --from=builder /src/${APP_RELATIVE_PATH}/bin/ .
 COPY --from=builder /src/${APP_RELATIVE_PATH}/config/ ../config/
 
 # expose 不然在容器外没有可以访问服务的端口
+# httpserver
+#EXPOSE 10000
+# userservice
 EXPOSE 10001
+# videoservice
+#EXPOSE 10002
+# socialservice
+#EXPOSE 10003
 VOLUME /data/conf
 
 #CMD ["./main"]

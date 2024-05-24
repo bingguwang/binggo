@@ -16,7 +16,8 @@ func Resolver() map[string]interface{} {
 	serveInstance := make(map[string]interface{})
 
 	etcdAddress := viper.GetString("etcd.address")
-	serviceDiscovery, err := etcd.NewServiceDiscovery([]string{etcdAddress})
+	etcdPassword := viper.GetString("etcd.password")
+	serviceDiscovery, err := etcd.NewServiceDiscovery([]string{etcdAddress}, etcdPassword)
 	if err != nil {
 		logger.Log.Fatal(err)
 	}
