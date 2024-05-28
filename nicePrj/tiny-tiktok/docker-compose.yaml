@@ -2,13 +2,13 @@ version: '3'
 services:
 
   user-service:
-    image: 192.168.2.130:5000/binggu-user_service:0.1.0
+    image: 192.168.2.130:8111/test/binggu-user_service:0.1.0
     container_name: user-service
     hostname: user-service
     depends_on:
-      - user-service-db
+      - mysql
       - etcd
-    #    command: ["sh","wait-for-it.sh", "user-service-db:3306", "--", "./configs" ]
+    #    command: ["sh","wait-for-it.sh", "user-service-db:3306", "--", "./config" ]
     ports:
       - "10001:10001"
     command: [ "./main" ]
@@ -17,10 +17,60 @@ services:
     volumes:
       - /var/log/user-service:/var/log/user_service
 
-  user-service-db:
+
+  video-service:
+    image: 192.168.2.130:8111/test/binggu-video_service:0.1.0
+    container_name: video-service
+    hostname: video-service
+    depends_on:
+      - mysql
+      - etcd
+      - rabbitmq
+    #    command: ["sh","wait-'for-it.sh", "user-service-db:3306", "--", "./config" ]
+    ports:
+      - "10002:10002"
+    command: [ "./main" ]
+    networks:
+      - tiktok
+    volumes:
+      - /var/log/video-service:/var/log/video_service
+
+  social-service:
+    image: 192.168.2.130:8111/test/binggu-social_service:0.1.0
+    container_name: social-service
+    hostname: social-service
+    depends_on:
+      - mysql
+      - etcd
+    #    command: ["sh","wait-'for-it.sh", "user-service-db:3306", "--", "./config" ]
+    ports:
+      - "10003:10003"
+    command: [ "./main" ]
+    networks:
+      - tiktok
+    volumes:
+      - /var/log/social-service:/var/log/social_service
+
+  api-router:
+    image: 192.168.2.130:8111/test/binggu-api_router:0.1.0
+    container_name: api-router
+    hostname: api-router
+    depends_on:
+      - mysql
+      - etcd
+    #    command: ["sh","wait-'for-it.sh", "user-service-db:3306", "--", "./config" ]
+    ports:
+      - "10000:10000"
+    command: [ "./main" ]
+    volumes:
+      - /var/log/api-router:/var/log/api_router
+    networks:
+      - tiktok
+
+  mysql:
     image: mysql:5.7
-    hostname: user-service-db
-    container_name: mysql-5.7-user-service-db
+    hostname: mysql
+    container_name: mysql-5.7
     privileged: true
     restart: always
     ports:
@@ -36,11 +86,56 @@ services:
       --default-authentication-plugin=mysql_native_password
     volumes:
       #映射mysql的数据目录到宿主机，保存数据
-      - "/app/mysql-user-service/data:/var/lib/mysql"
+      - "/app/mysql/data:/var/lib/mysql"
       #根据宿主机下的配置文件创建容器
-      - "/app/mysql-user-service/conf/my.cnf:/etc/mysql/my.cnf"
+      - "/app/mysql/conf/my.cnf:/etc/mysql/my.cnf"
     networks:
       - tiktok
+
+  rabbitmq:
+    restart: always
+    image: rabbitmq:management
+    container_name: rabbitmq
+    hostname: rabbit
+    privileged: true
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      TZ: Asia/Shanghai
+      RABBITMQ_DEFAULT_USER: rabbit
+      RABBITMQ_DEFAULT_PASS: 123456
+    volumes:
+      - rabbitdata:/var/lib/rabbitmq
+      - rabbitconf:/etc/rabbitmq
+    networks:
+      - tiktok
+
+
+  #  user-service-db:
+  #    image: mysql:5.7
+  #    hostname: user-service-db
+  #    container_name: mysql-5.7-user-service-db
+  #    privileged: true
+  #    restart: always
+  #    ports:
+  #      - "3306:3306"
+  #    environment:
+  #      MYSQL_ROOT_PASSWORD: 123456
+  #      MYSQL_PASS: 123456
+  #      TZ: Asia/Shanghai
+  #    command:
+  #      --wait_timeout=31536000
+  #      --interactive_timeout=31536000
+  #      --max_connections=1000
+  #      --default-authentication-plugin=mysql_native_password
+  #    volumes:
+  #      #映射mysql的数据目录到宿主机，保存数据
+  #      - "/app/mysql-user-service/data:/var/lib/mysql"
+  #      #根据宿主机下的配置文件创建容器
+  #      - "/app/mysql-user-service/conf/my.cnf:/etc/mysql/my.cnf"
+  #    networks:
+  #      - tiktok
 
   #  user-service:
   #    image: 1.14.163.5:5000/bingfood/bingfood-user-service:0.1.0
@@ -49,7 +144,7 @@ services:
   #    depends_on:
   #      - user-db
   #      - etcd
-  #    #    command: ["sh","wait-for-it.sh", "user-db:3306", "--", "./configs" ]
+  #    #    command: ["sh","wait-for-it.sh", "user-db:3306", "--", "./config" ]
   #    command: [ "./cmd" ]
 
   #  user-db:
@@ -82,7 +177,7 @@ services:
   #    depends_on:
   #      - order-db
   #      - etcd
-  #    #    command: ["sh","wait-for-it.sh", "user-db:3306", "--", "./configs" ]
+  #    #    command: ["sh","wait-for-it.sh", "user-db:3306", "--", "./config" ]
   #    command: [ "./cmd" ]
 
   #  order-db:
@@ -116,7 +211,7 @@ services:
   #    depends_on:
   #      - cart-db
   #      - etcd
-  #    #    command: ["sh","wait-for-it.sh", "user-db:3306", "--", "./configs" ]
+  #    #    command: ["sh","wait-for-it.sh", "user-db:3306", "--", "./config" ]
   #    command: [ "./cmd" ]
 
   #  cart-db:
@@ -179,14 +274,14 @@ services:
     privileged: true
     volumes:
       - etcd_data:/bitnami/etcd
-#    volumes:
-#      - "/app/etcd/data:/bitnami/etcd"
+    #    volumes:
+    #      - "/app/etcd/data:/bitnami/etcd"
     environment:
       - ETCD_ENABLE_AUTH=true
       - ETCD_INITIAL_CLUSTER_STATE=new
-#     指定 etcd 监听客户端请求的地址和端口，这里监听所有网络接口上的 2379 端口。
+      #     指定 etcd 监听客户端请求的地址和端口，这里监听所有网络接口上的 2379 端口。
       - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
-#      指定 etcd 公开给客户端的 URL，替换 <your-host-ip> 为你的主机 IP 地址。
+      #      指定 etcd 公开给客户端的 URL，替换 <your-host-ip> 为你的主机 IP 地址。
       - ETCD_ADVERTISE_CLIENT_URLS=http://0.0.0.0:2379
       - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
       - ETCD_INITIAL_ADVERTISE_PEER_URLS=http://0.0.0.0:2379
@@ -203,24 +298,32 @@ services:
     networks:
       - tiktok
 
+
+  redis:
+    image: redis:6.2.6
+    hostname: redis
+    container_name: redis-service
+    restart: always
+    privileged: true
+    volumes:
+      - "/app/redis/data:/data"
+      - "/app/redis/conf/redis.conf:/etc/redis/redis.conf"
+      # redis不具有自动创建logs的权限，需要在redis.conf指定相对位置，才能映射出日志文件
+      - "/app/redis/logs:/logs"
+    ports:
+      - 6379:6379
+    command: redis-server /etc/redis/redis.conf
+    networks:
+      - tiktok
+
 volumes:
-  etcd_data:         # 挂载到本地的数据卷名, 会在/var/lib/docker/volumes/下
+  etcd_data: # 挂载到本地的数据卷名, 会在/var/lib/docker/volumes/下
+    driver: local
+  rabbitdata:
+    driver: local
+  rabbitconf:
     driver: local
 
-#  redis:
-#    image: redis:6.2.6
-#    hostname: redis
-#    container_name: redis-service
-#    restart: always
-#    privileged: true
-#    volumes:
-#      - "/app/redis/data:/data"
-#      - "/app/redis/conf/redis.conf:/etc/redis/redis.conf"
-#      # redis不具有自动创建logs的权限，需要在redis.conf指定相对位置，才能映射出日志文件
-#      - "/app/redis/logs:/logs"
-#    ports:
-#      - 6379:6379
-#    command: redis-server /etc/redis/redis.conf
 
 
 #  nsqlookupd:
@@ -253,3 +356,6 @@ volumes:
 networks:
   tiktok:
     driver: bridge
+    # bridge 适用于容器需要在同一主机上相互通信的场景。仅限于同一主机上的通信，不适合多主机通信。
+    # 如果需要跨主机通信，可以使用额外的网络插件，如 Weave Net 等，将不同主机上的容器连接在同一个虚拟网络中，从而实现容器之间的跨主机通信。
+    # 或使用docker swarm

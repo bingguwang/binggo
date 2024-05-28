@@ -1,12 +1,12 @@
 server:
   name: social_service  # 服务名称
 #  address: 127.0.0.1:10003  # 服务地址
-  address: 0.0.0.0:10000  # 服务地址
+  address: 0.0.0.0:10003  # 服务地址
 
 
 mysql:
   driver: mysql
-  host: 127.0.0.1
+  host: mysql
   port: 3306
   username: root
   password: 123456
@@ -15,8 +15,9 @@ mysql:
 
 etcd:
   address: etcd:2379
+  username: root
   password: 123456
 
 redis:
-  address: 127.0.0.1:6379
+  address: redis:6379
   password: 123456

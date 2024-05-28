@@ -2,6 +2,7 @@ package mq
 
 import (
 	"context"
+	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"log"
 	"strconv"
@@ -11,9 +12,10 @@ import (
 )
 
 func TestMQServer(t *testing.T) {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	conn, err := amqp.Dial("amqp://rabbit:123456@localhost:5672/")
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
+	fmt.Println("conn:连接成功", conn == nil)
 
 	ch, err := conn.Channel()
 	failOnError(err, "Failed to open a channel")

@@ -4,7 +4,7 @@ import (
 	"github.com/spf13/viper"
 	"net/http"
 	"time"
-	config "tiny-tiktok/api_router/configs"
+	config "tiny-tiktok/api_router/config"
 	"tiny-tiktok/api_router/discovery"
 	"tiny-tiktok/api_router/pkg/logger"
 	"tiny-tiktok/api_router/router"

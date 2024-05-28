@@ -20,4 +20,8 @@ func InitRedis() {
 		DB:       0, // 存入DB0
 	})
 	log.Log.Info("redis初始化完毕!")
+	_, err := Redis.Ping(context.Background()).Result()
+	if err != nil {
+		panic(err)
+	}
 }

@@ -1,0 +1,115 @@
+禁用swap
+vim  /etc/fstab
+注释掉#/dev/mapper/centos-swap swap
+
+修改主机名和时间同步
+vim chrony.sh
+#!/bin/bash
+hostnamectl  set-hostname   harbor
+bash
+yum install  chrony  -y
+systemctl  enable  chronyd.service
+systemctl  start  chronyd.service
+timedatectl set-timezone Asia/Shanghai
+chronyc   sources
+
+chmod a+x  chrony.sh
+./chrony.sh
+
+关闭防火墙和关闭selinux
+vim  firewall.sh
+#!/bin/bash
+systemctl stop firewalld
+systemctl disable firewalld
+setenforce 0
+sed -i '/SELINUX/s/enforcing/disabled/' /etc/selinux/config
+
+
+chmod  a+x firewall.sh
+./firewall.sh
+grep  -v '^#' /etc/sysconfig/selinux | grep -v '^$'
+
+
+下载harbor
+wget -c https://github.com/goharbor/harbor/releases/download/v2.0.0/harbor-offline-installer-v2.0.0.tgz
+
+下载不了，就去github下载：https://github.com/goharbor/harbor/releases
+
+tar -xf harbor-offline-installer-v2.0.0.tgz
+
+
+配置harbor
+
+##  创建 https 证书
+# 创建证书目录，并赋予权限
+mkdir  /https/ca  -p
+chmod  -R 777 /https/ca/
+cd /https/ca/
+# 生成私钥，需要设置密码:1234
+openssl genrsa -des3 -out harbor.key 2048
+# 生成CA证书，需要输入密码1234
+
+cd /root
+openssl rand -writerand .rnd
+cd -
+
+
+openssl req -sha512 -new \
+-subj "/C=CN/ST=JS/L=WX/O=zwx/OU=jhmy/CN=192.168.0.58" \
+-key harbor.key \
+-out harbor.csr
+输入密码1234
+
+
+
+
+# 备份证书
+cp harbor.key  harbor.key.org
+# 退掉私钥密码，以便docker访问（也可以参考官方进行双向认证）
+openssl rsa -in harbor.key.org -out harbor.key
+输入密码1234
+# 使用证书进行签名
+openssl x509 -req -days 100000  -in harbor.csr -signkey harbor.key -out harbor.crt
+
+
+进入刚才的解压后的harbor里
+cd  harbor/
+vim  harbor.yml
+
+hostname: 192.168.0.58
+http:
+  port: 8080
+https:
+  # https port for harbor, default is 443
+  port: 443
+  # The path of cert and key files for nginx
+  certificate: /https/ca/harbor.crt
+  private_key: /https/ca/harbor.key
+harbor_admin_password: 123456
+
+
+./install.sh  --with-clair
+--with-clair参数是启用漏洞扫描功能，运行报错就不加这个直接执行./install.sh好了
+
+在daemon.json文件里加入
+   "insecure-registries": ["http://192.168.0.58:8080"]
+
+
+
+
+docker login登录
+和registry登录一样
+
+然后tag镜像Harbor主机名[端口]/项目名/镜像名:版本号
+其中的项目名需要现在harbor里创建好
+
+然后就可以push了
+
+
+harbor集群以及ssl配置，参考：https://www.cnblogs.com/wuvikr/p/14688079.html
+
+
+
+
+
+

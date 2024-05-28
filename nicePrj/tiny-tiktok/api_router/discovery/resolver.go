@@ -8,7 +8,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"tiny-tiktok/api_router/internal/service"
 	"tiny-tiktok/api_router/pkg/logger"
-	"tiny-tiktok/api_router/pkg/wrapper"
 	"tiny-tiktok/utils/etcd"
 )
 
@@ -17,7 +16,8 @@ func Resolver() map[string]interface{} {
 
 	etcdAddress := viper.GetString("etcd.address")
 	etcdPassword := viper.GetString("etcd.password")
-	serviceDiscovery, err := etcd.NewServiceDiscovery([]string{etcdAddress}, etcdPassword)
+	etcdUsername := viper.GetString("etcd.username")
+	serviceDiscovery, err := etcd.NewServiceDiscovery([]string{etcdAddress}, etcdPassword, etcdUsername)
 	if err != nil {
 		logger.Log.Fatal(err)
 	}
@@ -67,9 +67,9 @@ func Resolver() map[string]interface{} {
 	logger.Log.Info("获取社交服务实例--成功--")
 	serveInstance["social_service"] = socialClient
 
-	wrapper.NewWrapper("user_service")
-	wrapper.NewWrapper("video_service")
-	wrapper.NewWrapper("social_service")
+	//wrapper.NewWrapper("user_service")
+	//wrapper.NewWrapper("video_service")
+	//wrapper.NewWrapper("social_service")
 
 	return serveInstance
 }

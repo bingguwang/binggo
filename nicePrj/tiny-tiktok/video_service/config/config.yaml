@@ -2,12 +2,12 @@ server:
   name: video_service  # 服务名称
   port: :10002
 #  address: 127.0.0.1:10002  # 服务地址
-  address: 0.0.0.0:10000  # 服务地址
+  address: 0.0.0.0:10002  # 服务地址
 
 
 mysql:
   driver: mysql
-  host: user-service-db
+  host: mysql
   port: 3306
   username: root
   password: 123456
@@ -17,6 +17,7 @@ mysql:
 etcd:
 #  address: 127.0.0.1:2379
   address: etcd:2379
+  username: root
   password: 123456
 
 oss:
@@ -26,6 +27,7 @@ oss:
   accessKeySecret: secret
 
 rabbitMQ:
-  user: guest
-  password: guest
-  address: localhost:5672
+  user: rabbit
+  password: 123456
+#  address: 192.168.2.130:5672
+  address: rabbit:5672

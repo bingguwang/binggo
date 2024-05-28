@@ -17,11 +17,12 @@ type EtcdDiscovery struct {
 	lock       sync.RWMutex      // 读写互斥锁
 }
 
-func NewServiceDiscovery(endpoints []string, etcdPassword string) (*EtcdDiscovery, error) {
+func NewServiceDiscovery(endpoints []string, etcdPassword, etcdUsername string) (*EtcdDiscovery, error) {
 	// 创建etcdClient对象
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:   endpoints,
 		Password:    etcdPassword,
+		Username:    etcdUsername,
 		DialTimeout: 5 * time.Second,
 	})
 

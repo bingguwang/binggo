@@ -14,7 +14,7 @@ import (
 
 var Log *logrus.Logger
 
-const logPath = "/var/log/api_router/api_router.log"
+const logPath = "/var/log/vide_service/vide_service.log"
 
 func init() {
 	// 如果实例存在则不用新建
