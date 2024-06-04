@@ -1,0 +1,8 @@
+Name: bing.rpc
+ListenOn: 0.0.0.0:8080
+Etcd:
+  Hosts:
+  - 192.168.0.58:2379
+  Key: bing.rpc
+  User: root
+  Pass: "123456"

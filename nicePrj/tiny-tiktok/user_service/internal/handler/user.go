@@ -9,6 +9,7 @@ import (
 	"tiny-tiktok/user_service/internal/model"
 	"tiny-tiktok/user_service/internal/service"
 	"tiny-tiktok/user_service/pkg/cache"
+	"tiny-tiktok/user_service/pkg/logger"
 	"tiny-tiktok/utils/exception"
 )
 
@@ -60,6 +61,7 @@ func (*UserService) UserRegister(ctx context.Context, req *service.UserRequest) 
 func (*UserService) UserLogin(ctx context.Context, req *service.UserRequest) (resp *service.UserResponse, err error) {
 	resp = new(service.UserResponse)
 
+	logger.Log.Infof("用户登录:%s", req.Username)
 	// 检查用户是否存在
 	if exist := model.GetInstance().CheckUserExist(req.Username); exist {
 		resp.StatusCode = exception.UserUnExist

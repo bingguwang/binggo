@@ -1,0 +1,172 @@
+version: '3.8'
+services:
+
+  user-service:
+    image: 192.168.2.130:8111/test/binggu-user_service:0.1.0
+    hostname: user-service
+    depends_on:
+      - mysql
+      - etcd
+      - redis
+    deploy:
+#      使用 placement 子关键字来指定服务应该运行在哪些节点上。node.hostname 用于约束服务只在指定的节点上运行。
+      placement:
+        constraints: [node.hostname == wbtest1.novalocal]
+    ports:
+      - "10001:10001"
+    command: ["./main"]
+    networks:
+      - tiktok
+    volumes:
+      - /var/log/user-service:/var/log/user_service
+
+  video-service:
+    image: 192.168.2.130:8111/test/binggu-video_service:0.1.0
+    hostname: video-service
+    depends_on:
+      - mysql
+      - etcd
+      - redis
+      - rabbitmq
+    deploy:
+      placement:
+        constraints: [node.hostname == wbtest1.novalocal] # Replace with your actual node hostname
+    ports:
+      - "10002:10002"
+    command: ["./main"]
+    networks:
+      - tiktok
+    volumes:
+      - /var/log/video-service:/var/log/video_service
+
+  social-service:
+    image: 192.168.2.130:8111/test/binggu-social_service:0.1.0
+    hostname: social-service
+    depends_on:
+      - mysql
+      - etcd
+      - redis
+    deploy:
+      placement:
+        constraints: [node.hostname == wbtest1.novalocal] # Replace with your actual node hostname
+    ports:
+      - "10003:10003"
+    command: ["./main"]
+    volumes:
+      - /var/log/social-service:/var/log/social_service
+    networks:
+      - tiktok
+
+  api-router:
+    image: 192.168.2.130:8111/test/binggu-api_router:0.1.0
+    hostname: api-router
+    deploy:
+      placement:
+        constraints: [node.hostname == wbtest1.novalocal] # Replace with your actual node hostname
+    ports:
+      - "10000:10000"
+    command: ["./main"]
+    volumes:
+      - /var/log/api-router:/var/log/api_router
+    networks:
+      - tiktok
+
+  mysql:
+    image: mysql:5.7
+    hostname: mysql
+    deploy:
+      placement:
+        constraints: [node.hostname == harbor] # Replace with your actual node hostname
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_PASS: 123456
+      TZ: Asia/Shanghai
+    command:
+      --wait_timeout=31536000
+      --interactive_timeout=31536000
+      --max_connections=1000
+      --default-authentication-plugin=mysql_native_password
+    volumes:
+      - "/app/mysql/data:/var/lib/mysql"
+      - "/app/mysql/conf/my.cnf:/etc/mysql/my.cnf"
+    networks:
+      - tiktok
+
+  rabbitmq:
+    image: rabbitmq:management
+    hostname: rabbit
+    deploy:
+      placement:
+        constraints: [node.hostname == harbor] # Replace with your actual node hostname
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      TZ: Asia/Shanghai
+      RABBITMQ_DEFAULT_USER: rabbit
+      RABBITMQ_DEFAULT_PASS: 123456
+    volumes:
+      - rabbitdata:/var/lib/rabbitmq
+      - rabbitconf:/etc/rabbitmq
+    networks:
+      - tiktok
+
+  etcd:
+    image: bitnami/etcd:latest
+    hostname: etcd
+    deploy:
+      placement:
+        constraints: [node.hostname == harbor] # Replace with your actual node hostname
+    environment:
+      ETCD_ENABLE_AUTH: "true"
+      ETCD_INITIAL_CLUSTER_STATE: "new"
+      ETCD_LISTEN_CLIENT_URLS: "http://0.0.0.0:2379"
+#      ETCD_ADVERTISE_CLIENT_URLS: "http://0.0.0.0:2379"
+      ETCD_ADVERTISE_CLIENT_URLS: "http://etcd:2379"
+      ETCD_LISTEN_PEER_URLS: "http://0.0.0.0:2380"
+#      ETCD_INITIAL_ADVERTISE_PEER_URLS: "http://0.0.0.0:2379"
+      ETCD_INITIAL_ADVERTISE_PEER_URLS: "http://etcd:2379"
+      ETCD_NAME: etcd
+#      ETCD_INITIAL_CLUSTER: "etcd=http://0.0.0.0:2379"
+      ETCD_INITIAL_CLUSTER: "etcd=http://etcd:2379"
+      ETCD_INITIAL_CLUSTER_TOKEN: "my-etcd-token"
+      ETCD_ROOT_USER: root
+      ETCD_ROOT_PASSWORD: 123456
+      ALLOW_NONE_AUTHENTICATION: "no"
+    ports:
+      - "2379:2379"
+      - "2380:2380"
+    volumes:
+      - etcd_data:/bitnami/etcd
+    networks:
+      - tiktok
+
+  redis:
+    image: redis:6.2.6
+    hostname: redis
+    deploy:
+      placement:
+        constraints: [node.hostname == harbor] # Replace with your actual node hostname
+    ports:
+      - "6379:6379"
+    volumes:
+      - "/app/redis/data:/data"
+      - "/app/redis/conf/redis.conf:/etc/redis/redis.conf"
+      - "/app/redis/logs:/logs"
+    command: redis-server /etc/redis/redis.conf
+    networks:
+      - tiktok
+
+volumes:
+  etcd_data:
+    driver: local
+  rabbitdata:
+    driver: local
+  rabbitconf:
+    driver: local
+
+networks:
+  tiktok:
+    driver: overlay

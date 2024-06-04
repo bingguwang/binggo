@@ -1,0 +1,27 @@
+type (
+	expandReq {
+		shorten string `form:"shorten"`
+	}
+	expandResp {
+		url string `json:"url"`
+	}
+)
+
+type (
+	shortenReq {
+		url string `form:"url"`
+	}
+	shortenResp {
+		shorten string `json:"shorten"`
+	}
+)
+
+//service 用来定义 get/post/head/delete 等 api 请求
+service shorturl-api { // service名称为 shorturl-api
+	@handler ShortenHandler // 定义了服务端 handler 名字
+	get /shorten (shortenReq) returns (shortenResp) // 定义了 get 方法的路由、请求参数、返回参数等
+
+	@handler ExpandHandler
+	get /expand (expandReq) returns (expandResp)
+}
+

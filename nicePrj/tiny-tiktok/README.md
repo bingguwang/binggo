@@ -130,7 +130,7 @@
 │  │  ├─auth
 │  │  └─res
 │  └─router        # 路由和中间件  
-│      └─middleware
+│      └─middlewareDemo
 ```
 
 ​		**/cmd**：一个项目可以有很多个组件，吧main函数所在文件夹同一放在/cmd目录下

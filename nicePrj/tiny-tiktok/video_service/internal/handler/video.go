@@ -15,6 +15,7 @@ import (
 	"tiny-tiktok/video_service/internal/service"
 	"tiny-tiktok/video_service/pkg/cache"
 	"tiny-tiktok/video_service/pkg/cut"
+	"tiny-tiktok/video_service/pkg/logger"
 	"tiny-tiktok/video_service/pkg/mq"
 	"tiny-tiktok/video_service/third_party"
 )
@@ -66,8 +67,13 @@ func (*VideoService) Feed(ctx context.Context, req *service.FeedRequest) (resp *
 
 // PublishAction 发布视频
 func (*VideoService) PublishAction(ctx context.Context, req *service.PublishActionRequest) (resp *service.PublishActionResponse, err error) {
+	var updataErr, creatErr error
 	resp = new(service.PublishActionResponse)
 	reqString, err := json.Marshal(&req)
+	key := fmt.Sprintf("%s:%s", "user", "work_count")
+
+	logger.Log.Info("file length--", len(req.Data))
+	logger.Log.Info("body length--", len(reqString))
 
 	// 放入消息队列
 	conn := mq.InitMQ()
@@ -78,37 +84,101 @@ func (*VideoService) PublishAction(ctx context.Context, req *service.PublishActi
 	}
 	defer ch.Close()
 
-	// 声明队列
-	q, err := ch.QueueDeclare(
-		"video_publish",
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		log.Print(err)
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		// 声明队列
+		q, err := ch.QueueDeclare(
+			"video_publish",
+			false,
+			false,
+			false,
+			false,
+			nil,
+		)
+		updataErr = err
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if updataErr != nil {
+			return
+		}
+		updataErr = ch.PublishWithContext(ctx,
+			"",     // exchange
+			q.Name, // routing key
+			false,  // mandatory
+			false,  // immediate
+			amqp.Publishing{
+				ContentType: "application/octet-stream",
+				Body:        reqString,
+			})
+	}()
+	// 创建数据
+	go func() {
+		defer wg.Done()
+		// 创建video
+		video := model.Video{
+			AuthId:   req.UserId,
+			Title:    req.Title,
+			CoverUrl: "",
+			PlayUrl:  "",
+			CreatAt:  time.Now(),
+		}
+		creatErr = model.GetVideoInstance().Create(&video)
+	}()
+
+	wg.Wait()
+	// 异步回滚
+	if updataErr != nil || creatErr != nil {
+		go func() {
+			// 存入数据库失败，删除上传
+			if creatErr != nil {
+				// todo 删除上传
+			}
+			// 上传失败，删除数据库
+			if updataErr != nil {
+				// TODO 根据url查找，效率比较低
+				_ = model.GetVideoInstance().DeleteVideoByUrl("")
+			}
+		}()
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	err = ch.PublishWithContext(ctx,
-		"",     // exchange
-		q.Name, // routing key
-		false,  // mandatory
-		false,  // immediate
-		amqp.Publishing{
-			ContentType: "application/octet-stream",
-			Body:        reqString,
-		})
-	if err != nil {
+	if updataErr != nil || creatErr != nil {
 		resp.StatusCode = exception.VideoUploadErr
 		resp.StatusMsg = exception.GetMsg(exception.VideoUploadErr)
 
 		return resp, nil
 	}
+
+	// 发布成功，缓存中作品总数 + 1，如果不存在缓存则不做操作
+	exist, err := cache.Redis.HExists(cache.Ctx, key, strconv.FormatInt(req.UserId, 10)).Result()
+	if err != nil {
+		return nil, fmt.Errorf("缓存错误：%v", err)
+	}
+
+	if exist {
+		// 字段存在，该记录数量 + 1
+		_, err = cache.Redis.HIncrBy(cache.Ctx, key, strconv.FormatInt(req.UserId, 10), 1).Result()
+		if err != nil {
+			return nil, fmt.Errorf("缓存错误：%v", err)
+		}
+	}
+
+	// 发布成功延时双删发布列表
+	workKey := fmt.Sprintf("%s:%s:%s", "user", "work_list", strconv.FormatInt(req.UserId, 10))
+	err = cache.Redis.Del(cache.Ctx, workKey).Err()
+	if err != nil {
+		return nil, fmt.Errorf("缓存错误：%v", err)
+	}
+	defer func() {
+		go func() {
+			//延时3秒执行
+			time.Sleep(time.Second * 3)
+			//再次删除缓存
+			cache.Redis.Del(cache.Ctx, workKey)
+		}()
+	}()
 
 	resp.StatusCode = exception.SUCCESS
 	resp.StatusMsg = exception.GetMsg(exception.SUCCESS)
@@ -144,7 +214,7 @@ func (*VideoService) PublishAction1(ctx context.Context, req *service.PublishAct
 		coverByte, _ := cut.Cover(videoUrl, "00:00:03")
 		// 上传封面
 		updataErr = third_party.Upload(pictureDir, coverByte)
-		log.Print("上传成功")
+		logger.Log.Info("上传成功")
 	}()
 
 	// 创建数据
@@ -410,7 +480,7 @@ func PublishVideo() {
 	var forever chan struct{}
 	go func() {
 		for d := range msgs {
-			log.Print("开始消费消息")
+			logger.Log.Info("开始消费消息")
 			var req service.PublishActionRequest
 			err := json.Unmarshal(d.Body, &req)
 			if err != nil {

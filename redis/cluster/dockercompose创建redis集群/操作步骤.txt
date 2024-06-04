@@ -1,0 +1,35 @@
+假设一个机器上多个redis
+
+# 创建/root/redis-cluster目录
+mkdir -p /root/redis-cluster
+
+# 创建redis-1~redis-6文件夹
+mkdir /root/redis-cluster/redis-1 \
+/root/redis-cluster/redis-2 \
+/root/redis-cluster/redis-3 \
+/root/redis-cluster/redis-4 \
+/root/redis-cluster/redis-5 \
+/root/redis-cluster/redis-6
+
+
+在每个redis-*文件夹下创建redis.conf文件，并写入如下内容:
+cluster-enabled yes # 开启集群
+cluster-config-file nodes.conf # 集群配置文件
+cluster-node-timeout 5000 # 集群节点多少时间未响应视为该节点丢失
+appendonly yes
+port 6379 # redis监听端口
+
+port值不能都为6379，根据上面redis列表设置的端口号，依次给redis-1 ~ redis-6设置6379~6384端口号
+
+然后是docker-compose文件，在同路径下
+
+
+up -d后，随便找一个容器进入，执行命令开启集群，比如：
+redis-cli --cluster create 192.168.0.58:26379 \
+ 192.168.0.58:26380 \
+192.168.0.58:26381 \
+192.168.0.58:26382 \
+192.168.0.58:26383 \
+192.168.0.58:26384 \
+ --cluster-replicas 1
+

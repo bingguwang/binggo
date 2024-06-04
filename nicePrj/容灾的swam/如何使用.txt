@@ -1,0 +1,19 @@
+
+# 高阶用法
+
+节点标签
+添加标签
+docker node update --label-add role=角色名 节点名称
+删除标签
+docker node update --label-rm role 节点名称
+
+给节点贴上标签后，在docker-compose文件里设置约束，让服务在指定标签的节点运行
+这类似K8S的pod，可以在多个节点上运行多个副本
+负载均衡由swarm内部完成，一般只在某个worker节点接受处理请求，当该worker掉了，才会负载均衡到其他的worker节点来接收处理请求
+
+有没有办法，让请求能各个节点轮流处理呢？？ // todo
+
+
+
+
+

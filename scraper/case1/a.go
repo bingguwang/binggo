@@ -86,10 +86,31 @@ func testcollyxpath() {
 		colly.UserAgent("Mozilla / 5.0(Windows NT 10.0; Win64; x64) AppleWebKit / 537.36(KHTML, like Gecko) Chrome / 80.0.3987.122  Safari / 537.36"),
 		//colly.UserAgent("Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"),
 		//最大深度2
+		// 如果你将 MaxDepth 设置为 3，那么爬虫将只跟踪从初始页面开始的链接，直到深度为3的层级。
+		//也就是说，爬虫将只访问初始页面上的链接、初始页面上链接的页面、以及这些页面上的链接的页面。超过深度3的链接将被忽略。
+		//有的页面是有循环链接的，不限制深度可能会一直爬下去
 		colly.MaxDepth(2),
 	)
 	//限制采集规格
 	c.Limit(&colly.LimitRule{DomainGlob: "*.douban.*", Parallelism: 5})
+	/**
+	type LimitRule struct {
+		// 域名正则表达式。：用于匹配域名的正则表达式。只有匹配到的域名才会受到该规则的限制。
+		例如，如果你想限制爬虫访问以 "example.com" 开头的所有子域名，
+		你可以设置 DomainRegexp 为 ^https?://(.*\.)?example\.com/.*$。
+		DomainRegexp string
+		// 域名通配符。用于匹配域名的通配符模式。与正则表达式类似，只有匹配到的域名才会受到该规则的限制。例如，如果你想限制爬虫访问以 "example.com" 开头的所有子域名，你可以设置 DomainGlob 为 *.example.com/*
+		DomainGlob string
+		// 例如，设置 Delay 为 5 * time.Second 将使爬虫在发送两个请求之间等待 5 秒钟。
+		Delay time.Duration
+		// 额外的随机化延迟，被添加到 Delay 中。这有助于模拟真实用户的行为，以防止被目标网站识别为爬虫。
+		例如，如果你设置 Delay 为 10 * time.Second，而 RandomDelay 为 5 * time.Second，
+		则爬虫在发送请求之前将等待 10 到 15 秒之间的随机时间。
+		RandomDelay time.Duration
+		// 例如，如果设置 Parallelism 为 3，则最多会同时发送 3 个请求到匹配该规则的域名。
+		Parallelism    int
+	}
+	*/
 	//请求前
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL)
@@ -98,33 +119,31 @@ func testcollyxpath() {
 	c.OnError(func(_ *colly.Response, err error) {
 		fmt.Println("Something went wrong:", err)
 	})
-	//收到响应后
+
+	// 在收到 完整的HTTP 响应时执行的回调函数。
 	c.OnResponse(func(r *colly.Response) {
-		doc, err := htmlquery.Parse(strings.NewReader(string(r.Body)))
+		doc, err := htmlquery.Parse(strings.NewReader(string(r.Body))) //将 HTTP 响应的内容解析为 HTML 文档
 		if err != nil {
 			log.Fatal(err)
 		}
-		/**
-		findLink = re.compile(r'<a href="(.*?)">')  # 创建正则表达式对象，标售规则   影片详情链接的规则
-		findImgSrc = re.compile(r'<img.*src="(.*?)"', re.S)
-		findTitle = re.compile(r'<span class="title">(.*)</span>')
-		findRating = re.compile(r'<span class="rating_num" property="v:average">(.*)</span>')
-		findJudge = re.compile(r'<span>(\d*)人评价</span>')
-		findInq = re.compile(r'<span class="inq">(.*)</span>')
-		findBd = re.compile(r'<p class="">(.*?)</p>', re.S)
-		*/
+		//使用 XPath 查询对其进行处理。它使用了 htmlquery 包来解析 HTML。
+		// 它查找了所有 class 为 "hd" 的 <div> 元素，这些元素通常包含了电影的标题和链接等信息。
 		nodes := htmlquery.Find(doc, `//ol[@class="grid_view"]/li//div[@class="hd"]`)
 		for _, node := range nodes {
+			//在每个节点中查找电影链接和标题
 			url := htmlquery.FindOne(node, "./a/@href")
 			title := htmlquery.FindOne(node, `.//span[@class="title"]/text()`)
 			log.Println(strings.Split(htmlquery.InnerText(url), "/")[4],
 				htmlquery.InnerText(title))
 		}
 	})
+	//OnHTML指定了当 colly 在 HTML 页面中找到符合指定 CSS 选择器的链接时要执行的回调函数。
+	//a[href]指定了所有带有 href 属性的 <a> 标签,每个符合的元素只会调用一次回调函数
 	//因为最大深度设置2，
 	//当前第一级 html里的 每个a标签都会回调访问
-	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
-		link := e.Attr("href")
+	c.OnHTML("a[href]", func(e *colly.HTMLElement) { // e是一个HTML元素
+		link := e.Attr("href") // 获取此HTML元素的href属性
+		fmt.Println("link:", link)
 
 		// 查找行首以 ?start=0&filter= 的字符串（非贪婪模式）
 		reg := regexp.MustCompile(`(?U)^\?start=(\d+)&filter=`)

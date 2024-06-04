@@ -7,7 +7,6 @@ WORKDIR /src/${APP_RELATIVE_PATH}
 
 RUN echo "Building the Docker image..."
 RUN echo ${APP_RELATIVE_PATH}
-RUN echo pwd
 
 RUN go env -w GO111MODULE=on \
     && go env -w GOPROXY=https://goproxy.cn,direct \

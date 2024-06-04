@@ -2,7 +2,8 @@ server:
   name: video_service  # 服务名称
   port: :10002
 #  address: 127.0.0.1:10002  # 服务地址
-  address: 0.0.0.0:10002  # 服务地址
+#  address: 0.0.0.0:10002  # 服务地址
+  address: video-service:10002  # 服务地址,hostname,docker-compose里定义的是这个
 
 
 mysql:
@@ -31,3 +32,8 @@ rabbitMQ:
   password: 123456
 #  address: 192.168.2.130:5672
   address: rabbit:5672
+
+
+redis:
+  address: redis:6379
+#  password: 123456

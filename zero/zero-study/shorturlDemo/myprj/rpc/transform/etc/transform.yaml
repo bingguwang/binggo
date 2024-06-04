@@ -1,0 +1,15 @@
+Name: transform.rpc
+ListenOn: 0.0.0.0:8080
+Etcd:
+  Hosts:
+    - 192.168.0.58:2379
+  Key: transform.rpc
+  User: root
+  Pass: "123456"
+
+# 添加数据库和缓存的配置
+DataSource: root:123456@tcp(192.168.0.58:3306)/test
+Table: shorturl
+#缓存的配置
+Cache:
+  - Host: 192.168.0.58:6379

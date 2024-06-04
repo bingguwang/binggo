@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" serverName="r" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false">
+    <option name="confirmBeforeUploading" value="false" />
+    <serverData>
+      <paths name="r">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/tk/nicePrj/tiny-tiktok" local="$PROJECT_DIR$/nicePrj/tiny-tiktok" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="r2">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/binggo" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="r3">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/binggo" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+  </component>
+</project>

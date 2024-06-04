@@ -86,6 +86,8 @@ func Register(serviceName string, uuid string, serviceInfo ServiceInfoType, time
 	}
 
 	fmt.Println("开始注册")
+	fmt.Println(s.ServiceName)
+	fmt.Println(s.serviceInfo)
 	err = s.reg() //注册
 	if err != nil {
 		_ = cli.Close()

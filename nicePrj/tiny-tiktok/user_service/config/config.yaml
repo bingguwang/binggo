@@ -1,7 +1,8 @@
 server:
   name: user_service  # 服务名称
 #  address: 127.0.0.1:10001  # 服务地址
-  address: 0.0.0.0:10000  # 服务地址
+#  address: 0.0.0.0:10001  # 服务地址
+  address: user-service:10001  # 服务地址
 
 
 mysql:

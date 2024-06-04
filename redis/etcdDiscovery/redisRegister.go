@@ -1,4 +1,4 @@
-package etcdDiscovery
+package main
 
 import (
 	regdis "binggo/etcd/registerDiscovery"

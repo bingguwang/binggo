@@ -7,7 +7,8 @@ import (
 
 func ClientInit(dialTimeout time.Duration) (*EtcdClienter, error) {
 	endpoints := []string{
-		"192.168.2.130:2379",
+		//"192.168.2.130:2379",
+		"192.168.0.58:2379",
 	}
 	if dialTimeout == 0 {
 		dialTimeout = 5 * time.Second

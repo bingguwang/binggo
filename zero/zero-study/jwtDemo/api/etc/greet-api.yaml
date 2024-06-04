@@ -1,0 +1,16 @@
+Name: greet-api
+Host: 0.0.0.0
+Port: 8888
+
+
+Auth:
+  AccessSecret: uOvKLmVfztaXGpNYd4Z0I1SiT7MweJhl # JWT的秘钥
+  AccessExpire: 86400
+
+UserRpc:
+  Etcd:
+    Hosts:
+      - 192.168.0.58:2379
+    Key: user.rpc
+    User: root
+    Pass: "123456"

@@ -2,7 +2,8 @@ server:
   name: api_router  # 服务名称
   port: :10000
 #  address: 127.0.0.1:10000  # 服务地址
-  address: 0.0.0.0:10000  # 服务地址
+#  address: 0.0.0.0:10000  # 服务地址
+  address: api-router:10000  # 服务地址
   jwtSecret: 123456  # jwt密码
 
 

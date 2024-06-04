@@ -1,0 +1,33 @@
+通过api文件来生成
+goctl生成 goctl api -o greet.api 得到模板后，再根据需要来修改
+goctl api go -api myprj.api -dir mybingprj
+
+生成之后的项目结构：
+├── mybingprj
+│        ├── etc
+│        │       └── greet-api.yaml        // 配置文件
+│        ├── greet.go                  // main 文件
+│        └── internal
+│            ├── config
+│            │       └── config.go         // 配置定义类
+│            ├── handler
+│            │       ├── greethandler.go   // handler
+│            │       └── routes.go         // 路由列表
+│            ├── logic
+│            │       └── greetlogic.go     // 处理逻辑
+│            ├── svc
+│            │       └── servicecontext.go // service context, mysql/redis 可以用这个传递
+│            └── types
+│                └── types.go          // request/response 的定义在这
+└── mybingprj.api                     // api 描述文件
+
+然后你运行此项目:
+cd mybingprj
+go mod tidy
+go run greet.go -f etc/greet-api.yaml
+
+测试一下服务:
+curl -i http://localhost:8888/greet/from/you
+
+
+// 其实api文件就好比是grpc里的proto文件，只是api是用于生成http rest接口的，proto文件是rpc接口

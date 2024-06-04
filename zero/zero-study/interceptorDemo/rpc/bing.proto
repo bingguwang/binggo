@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package bing;
+option go_package="./bing";
+
+message Request {
+  string ping = 1;
+}
+
+message Response {
+  string pong = 1;
+}
+
+service Bing {
+  rpc Work(Request) returns(Response);
+}

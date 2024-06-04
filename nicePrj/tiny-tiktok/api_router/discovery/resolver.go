@@ -29,7 +29,14 @@ func Resolver() map[string]interface{} {
 		logger.Log.Fatal(err)
 	}
 	userServiceAddr, _ := serviceDiscovery.GetService("user_service")
-	userConn, err := grpc.Dial(userServiceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	// 使用了容器部署与容器编排后，其实可以不用etcd注册中心了，因为注册中心无非就是存服务和地址的映射
+	// 有容器编排之后，容器的hostname和port已经知道了的，所以无需注册中心其实
+	userConn, err := grpc.Dial(userServiceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithDefaultCallOptions(
+			grpc.MaxCallRecvMsgSize(1024*1024*50), // 设置最大接收消息大小为50MB
+			grpc.MaxCallSendMsgSize(1024*1024*50), // 设置最大发送消息大小为50MB
+		),
+	)
 	if err != nil {
 		logger.Log.Fatal(err)
 	}

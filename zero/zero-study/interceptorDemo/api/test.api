@@ -1,0 +1,13 @@
+syntax = "v1"
+
+type request {}
+
+type response {
+	Msg string
+}
+
+service test-api {
+	@handler GetUser
+	get /test/:name (request) returns (response)
+}
+

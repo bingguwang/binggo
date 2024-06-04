@@ -28,6 +28,7 @@ func AutoRegister() {
 
 	serviceName := viper.GetString("server.name")
 	serviceAddress := viper.GetString("server.address")
+	log.Log.Infof("注册服务:name:%s,address:%s", serviceName, serviceAddress)
 	err = etcdRegister.ServiceRegister(serviceName, serviceAddress, 30*int64(time.Minute.Seconds()))
 	if err != nil {
 		panic(err.Error())
@@ -39,7 +40,11 @@ func AutoRegister() {
 		panic(err.Error())
 	}
 
-	server := grpc.NewServer()
+	serverOptions := []grpc.ServerOption{
+		grpc.MaxRecvMsgSize(1024 * 1024 * 50), // 设置最大接收消息大小为50MB
+		grpc.MaxSendMsgSize(1024 * 1024 * 50), // 设置最大发送消息大小为50MB
+	}
+	server := grpc.NewServer(serverOptions...)
 	service.RegisterUserServiceServer(server, handler.NewUserService())
 
 	err = server.Serve(listener)
