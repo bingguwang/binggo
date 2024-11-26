@@ -14,7 +14,7 @@ import (
 
 var Log *logrus.Logger
 
-const logPath = "/var/log/user_service/user_service.log"
+const logPath = "/var/logDemo/user_service/user_service.logDemo"
 
 func init() {
 	// 如果实例存在则不用新建
@@ -57,7 +57,7 @@ func getFileDir() string {
 	logsPath := filepath.Join(filePath, "..", "..", "..", "logs")
 
 	// 文件名称
-	logFileName := now.Format("2006-01-02") + ".log"
+	logFileName := now.Format("2006-01-02") + ".logDemo"
 	fileName := path.Join(logsPath, logFileName)
 
 	// 查看文件是否存在，不存在则创建

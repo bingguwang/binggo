@@ -1,18 +1,11 @@
-package etcdDiscovery
+package main
 
 import (
 	register "binggo/etcd/registerDiscovery"
 	"binggo/utils"
 	"context"
 	"fmt"
-	"sync"
 	"testing"
-)
-
-var wg sync.WaitGroup
-
-const (
-	redisToRegister = "192.168.2.130"
 )
 
 func TestReg(t *testing.T) {

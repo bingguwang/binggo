@@ -1,0 +1,40 @@
+syntax = "v1"
+
+info (
+	title:   "type title here"
+	desc:    "type desc here"
+	author:  "type author here"
+	email:   "type email here"
+	version: "type version here"
+)
+
+type (
+	// 查询用户信息
+	userInfoReq {
+		UserId int64 `json:"userId"` // 用户id
+	}
+	UserInfoResp {
+		UserInfo *UserInfoItem `json:"Data"`
+	}
+	UserInfoItem {
+		Id         int64  `json:"userId"` // 用户ID
+		PassWord   string `json:"passWord"` // 用户密码，MD5加密
+		UserNick   string `json:"userNick"` // 用户昵称
+		UserFace   string `json:"userFace"` // 用户头像地址
+		UserSex    int64  `json:"userSex"` // 用户性别：0男，1女，2保密
+		UserEmail  string `json:"userEmail"` // 用户邮箱
+		UserPhone  string `json:"userPhone"` // 手机号
+		CreateTime string `json:"createTime"` // 创建时间
+		UpdateTime string `json:"updateTime"` // 更新时间
+		DeleteTime string `json:"deleteTime"`
+	}
+)
+
+service user-api {
+	@doc (
+		summary: "获取用户信息"
+	)
+	@handler userInfo
+	post /userinfo (userInfoReq) returns (UserInfoResp)
+}
+

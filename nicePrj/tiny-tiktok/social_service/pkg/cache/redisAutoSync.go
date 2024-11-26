@@ -88,7 +88,7 @@ func getAllValueByKeys(keys []string) string {
 			page++
 		}
 
-		log.Println(errs)
+		logDemo.Println(errs)
 		return nil
 */
 func AutoSync() {

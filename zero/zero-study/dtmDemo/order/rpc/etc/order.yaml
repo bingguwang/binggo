@@ -1,0 +1,37 @@
+Name: pay.rpc
+ListenOn: 0.0.0.0:8081
+Etcd:
+  Hosts:
+  - 192.168.2.130:2379
+  Key: pay.rpc
+  User: root
+  Pass: "123456"
+
+
+
+Mysql:
+  DataSource: root:123456@tcp(192.168.2.130:3306)/test?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
+
+
+ProductRpc:
+  Etcd:
+    Hosts:
+      - 192.168.2.130:2379
+    Key: product.rpc
+    User: root
+    Pass: "123456"
+
+
+UserRpc:
+  Etcd:
+    Hosts:
+      - 192.168.2.130:2379
+    Key: user.rpc
+    User: root
+    Pass: "123456"
+
+
+CacheRedis:
+  - Host: 192.168.2.130:6379
+    Type: node
+    Pass:

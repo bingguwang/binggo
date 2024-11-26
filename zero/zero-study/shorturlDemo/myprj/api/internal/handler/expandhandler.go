@@ -19,7 +19,7 @@ func ExpandHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 
 		l := logic.NewExpandLogic(r.Context(), svcCtx)
 		resp, err := l.Expand(&req)
-		if err != nil { // 如果是rpc调用的错误会有内设好的格式
+		if err != nil { // 如果是rpc调用的错误会有内设好的错误格式
 			httpx.ErrorCtx(r.Context(), w, err)
 		} else {
 			httpx.OkJsonCtx(r.Context(), w, resp)

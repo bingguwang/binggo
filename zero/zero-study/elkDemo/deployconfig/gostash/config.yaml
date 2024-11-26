@@ -1,0 +1,48 @@
+Clusters:
+  - Input: # Input定义了一个数据输入源
+      Kafka: # 这里数据输入源是Kafka
+        Name: gostash # 数据输入源的名字叫gostash
+        Brokers: # Kafka 集群的地址列表。
+          - "kafka1:9093"
+          - "kafka3:9095"
+        Topics: # 要从kafka消费的 topic 列表。
+          - looklook-logDemo
+        Group: pro # 消费者组名
+        Consumers: 16
+    Filters:  #  Filters定义了一系列过滤和处理输入数据的操作
+      - Action: drop # drop表示丢弃，定义了多个条件Conditions，当日志数据满足这些条件时，日志数据将被丢弃
+        Conditions:
+          - Key: k8s_container_name
+            Value: "-rpc"
+            Type: contains
+            # 这里表示 key为k8s_container_name的，如果值包含了 -rpc 就会被丢弃
+          - Key: level
+            Value: info
+            Type: match
+            Op: and
+      - Action: remove_field # remove_field表示舍弃一些字段，这些字段不要
+        Fields:
+          # - message
+          - _source
+          - _type
+          - _score
+          - _id
+          - "@version"
+          - topic
+          - index
+          - beat
+          - docker_container
+          - offset
+          - prospector
+          - source
+          - stream
+          - "@metadata"
+      - Action: transfer # transfer表示字段名转移
+        Field: message
+        Target: data
+        # 这里表示字段名称message改为data
+    Output:
+      ElasticSearch:
+        Hosts: # Elasticsearch 集群的地址列表
+          - "http://elasticsearch:9200"
+        Index: "looklook-{{yyyy-MM-dd}}" # index指定了elastic里的索引名称的格式

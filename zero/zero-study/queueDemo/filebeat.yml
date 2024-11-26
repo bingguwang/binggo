@@ -1,0 +1,44 @@
+filebeat.inputs:
+  - type: logDemo
+    enabled: true
+    paths:
+      # 读取的日志文件
+      - /var/lib/docker/containers/*/*-json.logDemo
+
+filebeat.config:
+  modules:
+    path: ${path.config}/modules.d/*.yml
+    reload.enabled: false
+
+processors:
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+#  - timestamp:
+#      field: start_time
+#      #timezone: Asia/Shanghai
+#      layouts:
+#        - '2006-01-02 15:04:05'
+#        - '2006-01-02 15:04:05.999'
+
+output.kafka:
+  enabled: true
+  hosts: ["kafka:9092"]
+  #要提前创建topic
+  topic: "looklook-logDemo"
+  partition.hash:
+    reachable_only: true
+  compression: gzip
+  max_message_bytes: 1000000
+  required_acks: 1
+
+# kibana配置
+#setup.kibana:
+#  host: "127.0.0.1:5601"
+
+# 如果是直接输出给es
+#output.elasticsearch:
+#  hosts: '127.0.0.1:9201'
+#  indices:
+#    - index: "filebeat-storConsole"
+#  #username: '${ELASTICSEARCH_USERNAME:}'
+#  #password: '${ELASTICSEARCH_PASSWORD:}'

@@ -1,0 +1,37 @@
+
+
+notify-keyspace-events
+
+redis.conf里notify-keyspace-events字段设为KEA
+
+然后订阅
+PSUBSCRIBE __keyevent@*__:*
+PSUBSCRIBE __keyevent@0__:keyname
+
+PSUBSCRIBE __keyspace@*__:*
+PSUBSCRIBE __keyspace@0__keyname
+
+
+针对key级别的
+
+不足：
+1.只能知道哪个key发生变换，而且变化的值是不会返回的，只会返回key名称
+2.由于只能知道哪个key发生变换，所以对于hash类型，不能具体到hash里的哪一条数据发生了变化，所以适应性不高，使用受限
+
+如下： 监听gbIPC，gbIPC是hash类型
+订阅
+PSUBSCRIBE __keyspace@*__:*
+
+__keyspace@*__:*
+__keyspace@0__:gbIPC
+hset
+
+gbIPC里的某条键值对数据发生变化的时候不能具体到某条数据
+
+
+针对以上痛点，使用增加一个channel，或者使用stream 作为消息队列比较合理
+当某条数据发生修改的时候，把唯一标识id发往channel里，订阅方收到后进行对应的读取更新操作
+
+
+
+

@@ -10,7 +10,7 @@ services:
       - redis
     deploy:
       replicas: 3
-#      使用 placement 子关键字来指定服务应该运行在哪些节点上。node.hostname 用于约束服务只在指定的节点上运行。
+      #      使用 placement 子关键字来指定服务应该运行在哪些节点上。node.hostname 用于约束服务只在指定的节点上运行。
       placement:
         constraints:                      # 添加条件约束
           - node.labels.role == backend
@@ -20,7 +20,7 @@ services:
     networks:
       - tiktok
     volumes:
-      - /var/log/user-service:/var/log/user_service
+      - /var/logDemo/user-service:/var/logDemo/user_service
 
   video-service:
     image: 192.168.2.130:8111/test/binggu-video_service:0.1.0
@@ -39,7 +39,7 @@ services:
     networks:
       - tiktok
     volumes:
-      - /var/log/video-service:/var/log/video_service
+      - /var/logDemo/video-service:/var/logDemo/video_service
 
   social-service:
     image: 192.168.2.130:8111/test/binggu-social_service:0.1.0
@@ -55,7 +55,7 @@ services:
       - "10003:10003"
     command: ["./main"]
     volumes:
-      - /var/log/social-service:/var/log/social_service
+      - /var/logDemo/social-service:/var/logDemo/social_service
     networks:
       - tiktok
 
@@ -69,7 +69,7 @@ services:
       - "10000:10000"
     command: ["./main"]
     volumes:
-      - /var/log/api-router:/var/log/api_router
+      - /var/logDemo/api-router:/var/logDemo/api_router
     networks:
       - tiktok
 
@@ -125,13 +125,13 @@ services:
       ETCD_ENABLE_AUTH: "true"
       ETCD_INITIAL_CLUSTER_STATE: "new"
       ETCD_LISTEN_CLIENT_URLS: "http://0.0.0.0:2379"
-#      ETCD_ADVERTISE_CLIENT_URLS: "http://0.0.0.0:2379"
+      #      ETCD_ADVERTISE_CLIENT_URLS: "http://0.0.0.0:2379"
       ETCD_ADVERTISE_CLIENT_URLS: "http://etcd:2379"
       ETCD_LISTEN_PEER_URLS: "http://0.0.0.0:2380"
-#      ETCD_INITIAL_ADVERTISE_PEER_URLS: "http://0.0.0.0:2379"
+      #      ETCD_INITIAL_ADVERTISE_PEER_URLS: "http://0.0.0.0:2379"
       ETCD_INITIAL_ADVERTISE_PEER_URLS: "http://etcd:2379"
       ETCD_NAME: etcd
-#      ETCD_INITIAL_CLUSTER: "etcd=http://0.0.0.0:2379"
+      #      ETCD_INITIAL_CLUSTER: "etcd=http://0.0.0.0:2379"
       ETCD_INITIAL_CLUSTER: "etcd=http://etcd:2379"
       ETCD_INITIAL_CLUSTER_TOKEN: "my-etcd-token"
       ETCD_ROOT_USER: root

@@ -1,0 +1,48 @@
+
+# 初始化Docker Swarm集群
+docker swarm init
+
+# 使用 overlay 网络驱动器使服务能够跨节点通信。
+docker network create --driver overlay tiktok
+
+# 您可以在其他节点上运行该命令，以将它们加入到 Swarm 集群中
+# 加入节点
+docker swarm join --token <TOKEN> <MANAGER_IP>:<MANAGER_PORT>
+比如：
+docker swarm join --token SWMTKN-1-3pj82wrrbmy2339li3bbcx7uhbzbapww3nx2494jeslz5m9z38-etoqyfxqkr8rvzgpufty4eot0 192.168.0.58:2377
+
+
+
+# 部署应用
+docker stack deploy -c docker-compose.yaml my_stack
+
+# 卸载应用
+docker stack rm my_stack
+
+# 查看服务
+docker service ls
+# 查看节点
+docker node ls
+# 查看服务日志
+docker service logs 服务名
+# 查看服务状态与信息
+docker service ps 服务名  --no-trunc
+
+
+# 查看服务详细信息
+docker service inspect --pretty my_stack_user-service
+
+
+
+
+
+
+
+# 管理应用
+
+
+
+
+
+docker service inspect mystack_web
+docker service scale mystack_web=3

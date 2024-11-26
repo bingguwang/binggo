@@ -1,8 +1,12 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
+	"github.com/zeromicro/go-zero/core/logx"
+	"golang.org/x/time/rate"
+	"google.golang.org/grpc/status"
 
 	"binggo/zero/zero-study/interceptorDemo/rpc/bing"
 	"binggo/zero/zero-study/interceptorDemo/rpc/internal/config"
@@ -33,7 +37,20 @@ func main() {
 		}
 	})
 	defer s.Stop()
+	s.AddUnaryInterceptors(rateLimitInterceptor)
 
 	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)
 	s.Start()
+}
+
+var limiter = rate.NewLimiter(rate.Limit(100), 100) // 实例化一个令牌桶拦截器，应该是全局共享的才有限流效果
+
+// 这里自定义一个用于限流的服务端拦截器
+func rateLimitInterceptor(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
+	if !limiter.Allow() {
+		logx.Error("限流了")
+		return nil, status.Error(500, "限流了")
+	}
+	logx.Info("正常处理rpc请求")
+	return handler(ctx, req) // 处理rpc调用请求
 }

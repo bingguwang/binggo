@@ -1,0 +1,17 @@
+type (
+	// 支付创建
+	CreateRequest {
+		Uid    int64 `json:"uid"`
+		Oid    int64 `json:"oid"`
+		Amount int64 `json:"amount"`
+	}
+	CreateResponse {
+		Id int64 `json:"id"`
+	}
+)
+
+service Pay {
+	@handler Create
+	post /api/pay/create (CreateRequest) returns (CreateResponse)
+}
+

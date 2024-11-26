@@ -12,6 +12,7 @@ import (
 	"strings"
 )
 
+// GetOutBoundIP 获取到对外的ip
 func GetOutBoundIP() (ip string, err error) {
 	conn, err := net.Dial("udp", "6.6.6.6:6666")
 	if err != nil {

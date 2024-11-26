@@ -28,7 +28,7 @@ func Database(connString string) {
 	// gin中有debug 、 release 、 test 三种模式
 	// 不指定默认以debug形式启动
 	// 开发用debug模式、 上线用release模式
-	// 指定方式 : gin.SetMode(gin.ReleaseMode)
+	// 指定方式 : gin-study.SetMode(gin-study.ReleaseMode)
 
 	// 设置gorm的日志模式，可以打印原生SQL语句
 	if gin.Mode() == "debug" {

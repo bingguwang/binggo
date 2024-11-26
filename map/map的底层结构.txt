@@ -1,0 +1,53 @@
+map 的结构如下
+
+type hmap struct {
+    count     int // 元素的个数，len(map)返回的值就是这个
+    flags     uint8 // 标记读写状态，主要是做竞态检测，避免并发读写
+    B         uint8  // 可以容纳 2 ^ N 个bucket
+    noverflow uint16 // 溢出的bucket个数
+    hash0     uint32 // hash 因子
+
+    buckets    unsafe.Pointer // 指向数组buckets的指针
+    oldbuckets unsafe.Pointer // growing 时保存原buckets的指针,原buckets数组大小是新的buckets的1/2;非扩容状态下，它为nil
+    nevacuate  uintptr        // growing 时已迁移的个数，小于此地址的buckets代表已搬迁完成。
+
+    extra *mapextra
+    // 这个字段是为了优化GC扫描而设计的。当key和value均不包含指针，并且都可以inline时使用。extra是指向mapextra类型的指针。
+}
+
+type mapextra struct {
+    overflow    *[]*bmap
+    oldoverflow *[]*bmap
+
+    nextOverflow *bmap
+}
+
+map里的元素是存在buckets里的，buckets是一个数组，数组的底层实现采用链表
+bucket的结构是一个bmap
+一个bmap可以装8个key，这些key是经过hash之后落入到这个bmap里的
+type bmap struct {
+    tophash [bucketCnt]uint8
+    // len为8的数组
+    // 用来快速定位key是否在这个bmap中
+    // 桶的槽位数组，一个桶最多8个槽位，如果key所在的槽位在tophash中，则代表该key在这个桶中
+}
+
+一个key存入的大致过程是>>>>>
+先找到是哪个桶，再桶内找插入到哪个位置
+hash值的低位映射到哪个桶
+hash值的高位来映射到桶里的哪个槽位
+
+槽位满了》》》
+如果槽位满了，分配到溢出桶里
+
+hash冲突》》》
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,8 @@
+RedisCache:
+  Host: "192.168.0.66:6379"
+  Type: "node"
+
+BloomFilter:
+  RedisKey: "my-bloom-filter"
+  BitSize: 10000
+  HashFuncs: 4

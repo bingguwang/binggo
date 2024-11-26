@@ -1,0 +1,9 @@
+Name: kq
+Brokers:
+- 192.168.2.130:9093
+- 192.168.2.130:9094
+- 192.168.0.66:9095
+Group: adhoc  # 消费组
+Topic: courseware-logDemo
+Offset: first
+Consumers: 1  # 消费组人数

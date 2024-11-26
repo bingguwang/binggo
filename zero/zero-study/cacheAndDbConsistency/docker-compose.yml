@@ -1,0 +1,120 @@
+version: '3'
+
+######## 项目依赖的环境，启动项目之前要先启动此环境 #######
+######## The environment that the project depends on, starting this environment before starting the project #######
+
+services:
+
+  #asynqmon asynq延迟队列、定时队列的webui - Asynqmon asynq delay queue, timing queue's webUI
+  #  asynqmon:
+  #    image: hibiken/asynqmon:latest
+  #    container_name: asynqmon
+  #    ports:
+  #      - 8980:8080
+  #    command:
+  #      - '--redis-addr=redis:6379'
+  #      - '--redis-password=G62m50oigInC30sf'
+  #    restart: always
+  #    networks:
+  #      - looklook_net
+  #    depends_on:
+  #      - redis
+
+#    mysql:
+#      image: mysql/mysql-server:8.0.28
+#      container_name: mysql
+#      environment:
+#        # 时区上海 - Time zone Shanghai (Change if needed)
+#        TZ: Asia/Shanghai
+#        # root 密码 - root password
+#        MYSQL_ROOT_PASSWORD: PXDN93VRKUm8TeE7
+#      ports:
+#        - 33069:3306
+#      volumes:
+#        # 数据挂载 - Data mounting
+#        - ./data/mysql/data:/var/lib/mysql
+#        # 日志
+#      command:
+#        # 将mysql8.0默认密码策略 修改为 原先 策略 (mysql8.0对其默认策略做了更改 会导致密码无法匹配)
+#        # Modify the Mysql 8.0 default password strategy to the original strategy (MySQL8.0 to change its default strategy will cause the password to be unable to match)
+#        --default-authentication-plugin=mysql_native_password
+#        --character-set-server=utf8mb4
+#        --collation-server=utf8mb4_general_ci
+#        --explicit_defaults_for_timestamp=true
+#        --lower_case_table_names=1
+#      privileged: true
+#      restart: always
+#      networks:
+#        - looklook_net
+
+    mysql:
+      image: mysql:5.7
+      container_name: mysql-5.7
+      #使用该参数，container内的root拥有真正的root权限，否则，container内的root只是外部的一个普通用户权限
+      #设置为true，不然数据卷可能挂载不了，启动不起
+      privileged: true
+      restart: always
+      ports:
+        - "3306:3306"
+      environment:
+        MYSQL_ROOT_PASSWORD: 1234
+        #      MYSQL_USER: root
+        MYSQL_PASS: 1234
+        TZ: Asia/Shanghai
+      command:
+        --wait_timeout=31536000
+        --interactive_timeout=31536000
+        --max_connections=1000
+        --default-authentication-plugin=mysql_native_password
+      volumes:
+        #映射mysql的数据目录到宿主机，保存数据
+        - "/app/mysql/data:/var/lib/mysql"
+        #根据宿主机下的配置文件创建容器
+        - "/app/mysql/conf/my.cnf:/etc/mysql/my.cnf"
+
+
+
+
+    #redis容器 - Redis container
+    redis:
+      image: redis:6.2.6
+      container_name: redis
+      ports:
+        - 36379:6379
+      environment:
+        # 时区上海 - Time zone Shanghai (Change if needed)
+        TZ: Asia/Shanghai
+      volumes:
+        # 数据文件 - data files
+        - ./data/redis/data:/data:rw
+      command: "redis-server --requirepass 123456  --appendonly yes"
+      privileged: true
+      restart: always
+      networks:
+        - looklook_net
+#
+#  user-api: # 自定义容器名称
+#    build:
+#      context: user                  # 指定构建使用的 Dockerfile 文件
+#      dockerfile: api/Dockerfile
+#    environment: # 设置环境变量
+#      - TZ=Asia/Shanghai
+#    privileged: true
+#    volumes:
+#      # 把日志文件挂载出来，挂到./data/logDemo/user-api下面，而这个路径又被filebeat挂载到了filebeat容器里以便被filebeat作为input读取
+#      - ./data/logDemo/user-api:/var/logDemo/go-zero/user-api
+#    ports: # 设置端口映射
+#      - "8300:8300"  # 课件服务api端口
+#    stdin_open: true                     # 打开标准输入，可以接受外部输入
+#    tty: true
+#    networks:
+#      - looklook_net
+#    restart: always                      # 指定容器退出后的重启策略为始终重启
+
+networks:
+  looklook_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.0.0/16
+

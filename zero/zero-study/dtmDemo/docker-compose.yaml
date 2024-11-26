@@ -1,0 +1,156 @@
+version: '3'
+services:
+
+  mysql:
+    image: mysql:5.7
+    hostname: mysql
+    container_name: mysql-5.7
+    privileged: true
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_PASS: 123456
+      TZ: Asia/Shanghai
+    command:
+      --wait_timeout=31536000
+      --interactive_timeout=31536000
+      --max_connections=1000
+      --default-authentication-plugin=mysql_native_password
+    volumes:
+      #映射mysql的数据目录到宿主机，保存数据
+      - "/app/mysql/data:/var/lib/mysql"
+      #根据宿主机下的配置文件创建容器
+      - "/app/mysql/conf/my.cnf:/etc/mysql/my.cnf"
+    networks:
+      - tiktok
+
+  etcd:
+    image: bitnami/etcd:latest
+    hostname: etcd
+    container_name: etcd-service
+    #    deploy:
+    #      replicas: 1
+    #      restart_policy:
+    #        condition: on-failure
+    privileged: true
+    volumes:
+      - etcd_data:/bitnami/etcd
+    #    volumes:
+    #      - "/app/etcd/data:/bitnami/etcd"
+    environment:
+      - ETCD_ENABLE_AUTH=true
+      - ETCD_INITIAL_CLUSTER_STATE=new
+      #     指定 etcd 监听客户端请求的地址和端口，这里监听所有网络接口上的 2379 端口。
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+      #      指定 etcd 公开给客户端的 URL，替换 <your-host-ip> 为你的主机 IP 地址。
+      - ETCD_ADVERTISE_CLIENT_URLS=http://0.0.0.0:2379
+      - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+      - ETCD_INITIAL_ADVERTISE_PEER_URLS=http://0.0.0.0:2379
+      - ETCD_NAME=etcd
+      - ETCD_INITIAL_CLUSTER=etcd=http://0.0.0.0:2379
+      - ETCD_INITIAL_CLUSTER_TOKEN=my-etcd-token
+      - ETCD_ROOT_USER=root
+      - ETCD_ROOT_PASSWORD=123456
+      - ALLOW_NONE_AUTHENTICATION=no
+
+    ports:
+      - 2379:2379
+      - 2380:2380
+    networks:
+      - tiktok
+
+
+  redis:
+    image: redis:6.2.6
+    hostname: redis
+    container_name: redis-service
+    restart: always
+    privileged: true
+    volumes:
+      - "/app/redis/data:/data"
+      - "/app/redis/conf/redis.conf:/etc/redis/redis.conf"
+      # redis不具有自动创建logs的权限，需要在redis.conf指定相对位置，才能映射出日志文件
+      - "/app/redis/logs:/logs"
+    ports:
+      - 6379:6379
+    command: redis-server /etc/redis/redis.conf
+    networks:
+      - tiktok
+
+
+  dtm:
+    image: yedf/dtm
+    hostname: dtm
+    #    build:
+    #      context: ./dtm
+    environment:
+      TZ: Asia/Shanghai
+      STORE_DRIVER: mysql
+      STORE_HOST: mysql
+      STORE_USER: root
+      STORE_PASSWORD: 123456
+      STORE_PORT: 3306
+    entrypoint:
+      - "/app/dtm/dtm"
+      - "-c=/app/dtm/configs/config.yaml"
+    depends_on:
+      - mysql
+      - etcd
+    privileged: true
+    volumes:
+      - ./config.yaml:/app/dtm/configs/config.yaml # 将 dtm 配置文件挂载到容器里
+    ports:
+      - "36789:36789"
+      - "36790:36790"
+    restart: always
+    networks:
+      - tiktok
+
+
+volumes:
+  etcd_data: # 挂载到本地的数据卷名, 会在/var/lib/docker/volumes/下
+    driver: local
+  rabbitdata:
+    driver: local
+  rabbitconf:
+    driver: local
+
+
+
+#  nsqlookupd:
+#    image: nsqio/nsq
+#    container_name: nsqlookupd-service
+#    command: /nsqlookupd
+#    hostname: nsqlookupd
+#    ports:
+#      - "4161:4161"
+#      - "4160:4160"
+#  nsqd:
+#    image: nsqio/nsq:latest
+#    container_name: nsqd-service
+#    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 --data-path=/data --broadcast-address=1.14.163.5
+#    depends_on:
+#      - nsqlookupd
+#    hostname: nsqd
+#    ports:
+#      - "4151:4151"
+#      - "4150:4150"
+#  nsqadmin:
+#    image: nsqio/nsq
+#    container_name: nsqadmin-service
+#    command: /nsqadmin --lookupd-http-address=nsqlookupd:4161
+#    depends_on:
+#      - nsqlookupd
+#    hostname: nsqadmin
+#    ports:
+#      - "4171:4171"
+
+
+networks:
+  tiktok:
+    driver: bridge
+    # bridge 适用于容器需要在同一主机上相互通信的场景。仅限于同一主机上的通信，不适合多主机通信。
+    # 如果需要跨主机通信，可以使用额外的网络插件，如 Weave Net 等，将不同主机上的容器连接在同一个虚拟网络中，从而实现容器之间的跨主机通信。
+    # 或使用docker swarm

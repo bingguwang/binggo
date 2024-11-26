@@ -1,0 +1,75 @@
+global: #全局性的配置
+  scrape_interval: 15s # 每15秒获取一次监控指标(prometheus 中叫 target)
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'codelab-monitor'
+
+scrape_configs: # 定义了监控的 target
+  - job_name: 'prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['127.0.0.1:9090']
+
+  - job_name: 'user-api'
+    static_configs:
+      - targets: [ 'user-api:20001' ] # 需要监控的 IP:端口 ,:20001 是user-api暴露给Prometheus用于监控收集指标数据的端口
+        labels: # 标签，这些标签将被添加到从上述目标抓取的数据中。这些标签可以用于区分和过滤不同的监控目标。
+          job: user-api # 将抓取任务标记为 user-api，通常用于区分不同的抓取任务
+          app: user-api # 将抓取的数据标记为 user-api 应用相关的数据。
+          env: dev # 标记环境为开发环境（dev），可以是 dev、staging、production 等。
+          instance: host.docker.internal:3001 #为目标实例添加标签
+#  - job_name: 'user-rpc'
+#    static_configs:
+#      - targets: [ 'gopan-user-rpc:6002' ]
+#        labels:
+#          job: user-rpc
+#          app: user-rpc
+#          env: dev
+#          instance: host.docker.internal:3002
+#  - job_name: 'upload-api'
+#    static_configs:
+#      - targets: [ 'gopan-upload-api:6003' ]
+#        labels:
+#          job: upload-api
+#          app: upload-api
+#          env: dev
+#          instance: host.docker.internal:3003
+#  - job_name: 'upload-rpc'
+#    static_configs:
+#      - targets: [ 'gopan-upload-rpc:6004' ]
+#        labels:
+#          job: upload-rpc
+#          app: upload-rpc
+#          env: dev
+#          instance: host.docker.internal:3003
+#  - job_name: 'transfer'
+#    static_configs:
+#      - targets: [ 'gopan-transfer:6010' ]
+#        labels:
+#          job: transfer
+#          app: transfer
+#          env: dev
+#  - job_name: 'download-api'
+#    static_configs:
+#      - targets: [ 'gopan-download-api:6005' ]
+#        labels:
+#          job: download-api
+#          app: download-api
+#          env: dev
+#          instance: host.docker.internal:3005
+#  - job_name: 'filemeta-api'
+#    static_configs:
+#      - targets: [ 'gopan-filemeta-api:6006' ]
+#        labels:
+#          job: filemeta-api
+#          app: filemeta-api
+#          env: dev
+#          instance: host.docker.internal:3006
+#  - job_name: 'filemeta-rpc'
+#    static_configs:
+#      - targets: [ 'gopan-filemeta-rpc:6007' ]
+#        labels:
+#          job: filemeta-rpc
+#          app: filemeta-rpc
+#          env: dev
+#          instance: host.docker.internal:3007

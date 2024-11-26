@@ -1,0 +1,17 @@
+# redis configuration
+redis:
+  db: 0
+  addr: '127.0.0.1:6379'
+#  password:
+
+mysql:  
+  host: mysql        # 服务器地址
+  port: '3306'       # 端口
+  config: ''       # 高级配置
+  db_name: 'bingFood'   # 数据库名
+  username: 'root'# 数据库用户名
+  password: '1234'# 数据库密码
+  max_idle_conns: 64 # 空闲中的最大连接数
+  max_open_conns: 128 # 打开到数据库的最大连接数
+  log_mode:      # 是否开启Gorm全局日志
+  log_zap:       # 是否通过zap写入日志

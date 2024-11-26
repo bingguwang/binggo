@@ -13,16 +13,20 @@ systemctl start docker   #启动
 systemctl enable docker  #自启
 
 vim /etc/docker/daemon.json
+
 {
  "registry-mirrors" : [
    "https://mirror.ccs.tencentyun.com",
    "http://registry.docker-cn.com",
    "http://docker.mirrors.ustc.edu.cn",
-   "http://hub-mirror.c.163.com"
+   "http://hub-mirror.c.163.com",
+   "https://docker.nju.edu.cn"
  ],
  "insecure-registries" : [
    "registry.docker-cn.com",
-   "docker.mirrors.ustc.edu.cn"
+   "docker.mirrors.ustc.edu.cn",
+   "192.168.2.130:5000",
+   "192.168.2.130:8111"
  ],
  "debug" : true,
  "experimental" : true

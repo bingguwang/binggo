@@ -1,0 +1,73 @@
+池子里有个worker队列
+type workerStack struct {
+	items  []worker
+	expiry []worker
+}
+worker是真正执行任务的人
+
+retrieveWorker是获取一个worker的方法
+
+大概的伪代码如下：
+func (p *PoolWithFunc) retrieveWorker() (w worker, err error) {
+	p.lock.Lock()
+
+retry:
+	// 先尝试从worker队列里拿一个worker出来，拿到执行者worker就返回
+	if w = p.workers.detach(); w != nil {
+	    // 拿到了就返回并解锁
+		p.lock.Unlock()
+		return
+	}
+
+	// 如果池子容量没有限制或者当前运行的协程没有达到池子容量，说明还可以增加worker
+	if capacity := p.Cap(); capacity == -1 || capacity > p.Running() {
+		p.lock.Unlock()
+		w = p.workerCache.Get().(*goWorkerWithFunc)
+		// 新增一个worker
+		w.run()		// 运行执行者并返回
+		return
+	}
+
+    // 其他情况就说明池子里没有空闲协程可用了，任务进入等待队列，等待队列长度+1
+    // 利用p.cond.Wait() 阻塞当前的任务，直到被通知有一个可用的 worker（worker执完的时候会Signal）
+    。此时，这个任务会释放锁，允许其他任务或操作继续执行。
+
+	goto retry
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

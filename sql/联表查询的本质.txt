@@ -1,0 +1,62 @@
+
+联表查询本质上是对笛卡尔积的一种过滤操作。
+笛卡尔积生成了所有可能的行组合，而联表查询则通过 ON 或 WHERE 子句来过滤这些行，留下符合条件的行。
+
+
+例如，内连接的内部工作机制如下：
+SELECT *
+FROM A, B
+WHERE A.id = B.a_id;
+这实际上是先生成表 A 和表 B 的笛卡尔积，然后只保留 A.id = B.a_id 的行。
+
+
+笛卡尔积其实就是一种多表查询
+SELECT * FROM A, B; 就是一种笛卡尔积
+
+举例说明
+假设我们有两个表：
+
+表 A：
+
+id	name
+1	Alice
+2	Bob
+
+表 B：
+a_id	score
+1	    85
+1	    90
+2	    88
+
+笛卡尔积
+SELECT * FROM A, B;
+
+结果：
+id	name	a_id	score
+1	Alice	1	    85
+1	Alice	1	    90
+1	Alice	2	    88
+2	Bob	    1	    85
+2	Bob	    1	    90
+2	Bob	    2	    88
+
+
+内连接
+SELECT * FROM A
+INNER JOIN B
+ON A.id = B.a_id;
+结果：
+id	name	a_id	score
+1	Alice	1	    85
+1	Alice	1	    90
+2	Bob	    2	    88
+通过对比可以看出，内连接只是笛卡尔积的一种过滤形式，保留了符合 A.id = B.a_id 的行
+
+
+另外几种连接查询：
+内连接（INNER JOIN）：只返回在两个表中都存在匹配的数据。
+左连接（LEFT JOIN 或 LEFT OUTER JOIN）：返回左表中的所有记录，即使右表中没有匹配的记录。
+右连接（RIGHT JOIN 或 RIGHT OUTER JOIN）：返回右表中的所有记录，即使左表中没有匹配的记录。
+全连接（FULL JOIN 或 FULL OUTER JOIN）：返回两个表中的所有记录，左右表中没有匹配的记录也会显示。
+
+

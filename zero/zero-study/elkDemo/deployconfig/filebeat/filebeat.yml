@@ -1,0 +1,28 @@
+filebeat.inputs:
+  - type: logDemo
+    enabled: true
+    paths:
+      # 如果是容器部署的话，这个路径便是容器里的路径了
+      - /var/lib/docker/containers/*/*.logDemo
+
+filebeat.config:
+  modules:
+    path: ${path.config}/modules.d/*.yml
+    reload.enabled: false
+
+processors:
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+
+output.kafka:
+  enabled: true
+#  hosts: ["kafka1:9093","kafka2:9094","kafka3:9095"]
+#  hosts: ["192.168.2.130:9093","192.168.0.66:9095"]
+  hosts: ["kafka1:9093"]
+  #要提前创建topic
+  topic: "looklook-logDemo"
+  partition.hash:
+    reachable_only: true
+  compression: gzip
+  max_message_bytes: 1000000
+  required_acks: 1

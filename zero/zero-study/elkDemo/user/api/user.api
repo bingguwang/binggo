@@ -1,0 +1,18 @@
+type (
+
+	// 用户信息
+	UserInfoRequest {
+		Id uint64 `json:"id"`
+	}
+	UserInfoResponse {
+		Id        uint64 `json:"id"`
+		Username  string `json:"username"`
+		LoginName string `json:"loginName"`
+		Sex       uint64 `json:"sex"`
+	}
+)
+service user {
+	
+	@handler userInfo
+	post /api/user/userInfo (UserInfoRequest) returns (UserInfoResponse)
+}

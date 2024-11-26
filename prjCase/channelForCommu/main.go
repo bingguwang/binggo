@@ -11,7 +11,7 @@ import (
 )
 
 type Superior struct {
-	regChan              chan string
+	regChan              chan string // 重注册信号
 	userAgent            *userAgent
 	regStatus            string
 	state                string

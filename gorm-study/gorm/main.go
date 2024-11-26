@@ -39,7 +39,7 @@ func main() {
 	sqlDB.SetMaxOpenConns(100) //设置数据库连接池最大连接数
 	sqlDB.SetMaxIdleConns(20)  //连接池最大允许的空闲连接数，如果没有sql任务需要执行的连接数大于20，超过的连接会被连接池关闭。
 
-	// db.SetLogger(log.New(os.Stdout, "\r\n", 0)) //设置日志格式
+	// db.SetLogger(logDemo.New(os.Stdout, "\r\n", 0)) //设置日志格式
 
 	fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>插入操作>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 	s := gormutils.Singer{Name: "周杰伦", NickName: "周董"} //满足驼峰命名方法

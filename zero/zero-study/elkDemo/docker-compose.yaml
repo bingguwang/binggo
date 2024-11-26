@@ -1,0 +1,237 @@
+version: "3.0"
+
+services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.4
+    container_name: elasticsearch
+#    build: . # docker build创建非root用户
+    user: root
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+#      - ELASTIC_PASSWORD=123456  # 设置 elastic 用户的密码
+      - TZ=Asia/Shanghai
+      # 8版本后的elastic需要ssl证书，如果不用https可以关掉
+#      - xpack.security.enabled=false
+#      - xpack.security.http.ssl.enabled=false
+
+#      - xpack.security.enabled=false
+#      - xpack.security.http.ssl.enabled=true
+#      - xpack.security.http.ssl.key=/usr/share/elasticsearch/config/certs/elasticsearch.key
+#      - xpack.security.http.ssl.certificate=/usr/share/elasticsearch/config/certs/elasticsearch.crt
+#      - xpack.security.http.ssl.certificate_authorities=/usr/share/elasticsearch/config/certs/elasticsearch.crt
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [ node.hostname == wbtest2.novalocal ]
+    volumes:
+      # sudo chown -R 1000:1000 /home/elasticsearch/data
+      # sudo chown -R 1000:1000 /home/certs
+      - ./data/elasticsearch/data:/usr/share/elasticsearch/data
+#      - /home/certs:/usr/share/elasticsearch/config/certs
+    restart: always
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - mylog
+
+  kibana:
+    image: 192.168.2.130:8111/test/docker.elastic.co/kibana/kibana:7.13.4
+    container_name: kibana
+    environment:
+      - elasticsearch.hosts=http://elasticsearch:9200
+      - TZ=Asia/Shanghai
+    restart: always
+    networks:
+      - mylog
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+
+  go-stash:
+    image: kevinwan/go-stash:1.0 # if you "macOs intel" or "linux amd"
+#    image: kevinwan/go-stash:1.0-arm64 #  if you "macOs m1" or "linux arm"
+    container_name: go-stash
+    environment:
+      # 时区上海 - Time zone Shanghai (Change if needed)
+      TZ: Asia/Shanghai
+    user: root
+    restart: always
+    volumes:
+      - ./deployconfig/gostash/config.yaml:/app/etc/config.yaml
+    networks:
+      - mylog
+    depends_on:
+      - elasticsearch
+      - kafka1
+      - kafka2
+      - kafka3
+
+  #收集业务数据
+  filebeat:
+    image: elastic/filebeat:7.13.4
+    container_name: filebeat
+    environment:
+      # 时区上海 - Time zone Shanghai (Change if needed)
+      TZ: Asia/Shanghai
+    user: root
+    restart: always
+    entrypoint: "filebeat -e -strict.perms=false"  #解决配置文件权限问题 - Solving the configuration file.sql permissions
+    volumes:
+      - ./deployconfig/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      # 把项目在宿主机的日志路径挂载到filebeat容器内的读取路径上
+      - ./data/logDemo:/var/lib/docker/containers
+#      - logDemo-data:/var/lib/docker/containers
+    networks:
+      - mylog
+#    depends_on:
+#      - kafka1
+#      - kafka2
+#      - kafka3
+
+#volumes:
+#  logDemo-data:
+#    external: true
+
+  zookeeper:
+    image: 192.168.2.130:8111/test/bitnami/zookeeper
+    environment:
+      TZ: Asia/Shanghai
+      # 运行无密登录
+      ALLOW_ANONYMOUS_LOGIN: 'yes'
+    ports:
+      - 2182:2181
+    volumes:
+      - /data/zookeeper:/data
+    restart: always
+    networks:
+      - mylog
+
+
+  kafka1:
+    image: 192.168.2.130:8111/test/wurstmeister/kafka:latest
+    container_name: kafka1
+    ports:
+      - "9093:9092"
+    environment:
+      TZ: Asia/Shanghai
+#      KAFKA_BROKER_ID: 0
+      KAFKA_NUM_PARTITIONS: 3 # 分区个数
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 2 # 分区副本数
+      KAFKA_ZOOKEEPER_CONNECT: 192.168.2.130:2182
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+#      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.2.130:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:9093
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [ node.hostname == wbtest1.novalocal ] # Replace with your actual node hostname
+    volumes:
+      - /data/docker-compose/kafka/broker1/logs:/opt/kafka/logs
+      - /data/kafka1:/kafka
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+    networks:
+      mylog:
+        aliases:
+          - kafka1
+
+  kafka2:
+    image: 192.168.2.130:8111/test/wurstmeister/kafka:latest
+    container_name: kafka2
+    ports:
+      - "9094:9092"
+    environment:
+      TZ: Asia/Shanghai
+#      KAFKA_BROKER_ID: 1
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 2
+      KAFKA_ZOOKEEPER_CONNECT: 192.168.2.130:2182
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+#      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.2.130:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:9094
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [ node.hostname == wbtest1.novalocal ] # Replace with your actual node hostname
+    volumes:
+      - /data/docker-compose/kafka/broker2/logs:/opt/kafka/logs
+      - /data/kafka2:/kafka
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+    networks:
+#       - mylog
+       mylog:
+         aliases:
+           - kafka2
+
+  kafka3:
+    image: 192.168.2.130:8111/test/wurstmeister/kafka:latest
+    container_name: kafka3
+    ports:
+      - "9095:9092"
+    environment:
+      TZ: Asia/Shanghai
+#      KAFKA_BROKER_ID: 0
+      KAFKA_NUM_PARTITIONS: 3 # 分区个数
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 2 # 分区副本数
+      KAFKA_ZOOKEEPER_CONNECT: 192.168.2.130:2182
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+#      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.0.66:9095
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka3:9095
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [ node.hostname == wbtest2.novalocal ] # Replace with your actual node hostname
+    volumes:
+      - /data/docker-compose/kafka/broker1/logs:/opt/kafka/logs
+      - /data/kafka1:/kafka
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+    networks:
+#      - mylog
+      mylog:
+        aliases:
+          - kafka3
+
+  user-api: # 自定义容器名称
+    image: 192.168.2.130:8111/test/elkdemo-user-api:latest
+    container_name: user-api
+    build:
+      context: user                  # 指定构建使用的 Dockerfile 文件
+      dockerfile: api/Dockerfile
+    environment: # 设置环境变量
+      - TZ=Asia/Shanghai
+    privileged: true
+    volumes:
+      # 把日志文件挂载出来，挂到./data/logDemo/user-api下面，而这个路径又被filebeat挂载到了filebeat容器里以便被filebeat作为input读取
+      - ./data/logDemo/user-api:/var/logDemo/go-zero/user-api
+    ports: # 设置端口映射
+      - "8300:8300"  # 课件服务api端口
+    stdin_open: true                     # 打开标准输入，可以接受外部输入
+    tty: true
+    networks:
+      - mylog
+    restart: always                      # 指定容器退出后的重启策略为始终重启
+
+
+  #  kafka-init为了预先创建好topic而用
+  kafka-init:
+    image: 192.168.2.130:8111/test/wurstmeister/kafka:latest
+    networks:
+      - mylog
+    depends_on:
+      - kafka1
+    command: "sh -c 'sleep 30 && /opt/kafka/bin/kafka-topics.sh --create --bootstrap-server kafka1:9093 --replication-factor 1 --partitions 1 --topic looklook-logDemo && exec tail -f /dev/null'"
+
+
+networks:
+  mylog:
+    driver: overlay

@@ -1,0 +1,101 @@
+version: '3.8'
+services:
+
+  zookeeper:
+    image: 192.168.2.130:8111/test/bitnami/zookeeper
+    environment:
+      TZ: Asia/Shanghai
+      # 运行无密登录
+      ALLOW_ANONYMOUS_LOGIN: 'yes'
+    ports:
+      - 2182:2181
+    volumes:
+      - /data/zookeeper:/data
+    restart: always
+
+  kafka1:
+    image: 192.168.2.130:8111/test/wurstmeister/kafka:latest
+    container_name: kafka1
+    ports:
+      - "9093:9092"
+    environment:
+      TZ: Asia/Shanghai
+      KAFKA_BROKER_ID: 0
+      KAFKA_NUM_PARTITIONS: 3 # 分区个数
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 2 # 分区副本数
+      KAFKA_ZOOKEEPER_CONNECT: 192.168.2.130:2182
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.2.130:9093
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [ node.hostname == wbtest1.novalocal ] # Replace with your actual node hostname
+    volumes:
+      - /data/docker-compose/kafka/broker1/logs:/opt/kafka/logs
+      - /data/kafka1:/kafka
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+    networks:
+      - kfk
+
+
+  kafka2:
+    image: 192.168.2.130:8111/test/wurstmeister/kafka:latest
+    container_name: kafka2
+    ports:
+      - "9094:9092"
+    environment:
+      TZ: Asia/Shanghai
+      KAFKA_BROKER_ID: 1
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 2
+      KAFKA_ZOOKEEPER_CONNECT: 192.168.2.130:2182
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.2.130:9094
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [ node.hostname == wbtest1.novalocal ] # Replace with your actual node hostname
+    volumes:
+      - /data/docker-compose/kafka/broker2/logs:/opt/kafka/logs
+      - /data/kafka2:/kafka
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+    networks:
+      - kfk
+
+  kafka3:
+    image: 192.168.2.130:8111/test/wurstmeister/kafka:latest
+    container_name: kafka3
+    ports:
+      - "9095:9092"
+    environment:
+      TZ: Asia/Shanghai
+      KAFKA_BROKER_ID: 0
+      KAFKA_NUM_PARTITIONS: 3 # 分区个数
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 2 # 分区副本数
+      KAFKA_ZOOKEEPER_CONNECT: 192.168.2.130:2182
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.0.66:9095
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [ node.hostname == wbtest2.novalocal ] # Replace with your actual node hostname
+    volumes:
+      - /data/docker-compose/kafka/broker1/logs:/opt/kafka/logs
+      - /data/kafka1:/kafka
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+    networks:
+      - kfk
+
+##
+#volumes:
+#  kafka2:
+#    driver: /data/kafka2
+#  kafka1:
+#    driver: /data/kafka1
+
+networks:
+  kfk:
+    driver: overlay

@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package order;
+
+option go_package = "./pay";
+
+// 订单创建
+message CreateRequest {
+  int64 Uid = 1;
+  int64 Pid = 2;
+  int64 Amount = 3;
+  int64 Status = 4;
+}
+message CreateResponse {
+  int64 id = 1;
+}
+
+service Order {
+  rpc Create(CreateRequest) returns(CreateResponse);
+  //  调用订单创建事务的补偿函数
+  rpc CreateRevert(CreateRequest) returns(CreateResponse);
+}

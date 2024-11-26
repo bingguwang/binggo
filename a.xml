@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="GB2312"?>\n
+<Response>\n
+    <CmdType>Catalog</CmdType>\n
+    <SN>2402</SN>\n
+    <DeviceID>0200021320136</DeviceID>\n
+    <SumNum>4</SumNum>\n
+    <DeviceList Num="2">\n
+        <Item>\n
+            <DeviceID></DeviceID>\n
+            <Name></Name>\n
+            <Manufacturer>Hikvision</Manufacturer>\n
+            <Model>AlarmIn</Model>\n
+            <Owner>Owner</Owner>\n
+            <CivilCode>110120</CivilCode>\n
+            <Block>Block 1</Block>\n
+            <Address>Address</Address>\n
+            <Parental>0</Parental>\n
+            <ParentID>0200021320136</ParentID>\n
+            <SafetyWay>0</SafetyWay>\n
+            <RegisterWay>1</RegisterWay>\n
+            <CertNum>CertNum 1</CertNum>\n
+            <Certifiable>0</Certifiable>\n
+            <ErrCode>400</ErrCode>\n
+            <EndTime>2024-06-27T13:10:06</EndTime>\n
+            <Secrecy>0</Secrecy>\n
+            <IPAddress>10.255.173.140</IPAddress>\n
+            <Port>5060</Port>\n
+            <Password>Password 1</Password>\n
+            <Status>ON</Status>\n
+            <Info>\n
+                <PTZType>1</PTZType>\n
+            </Info>\n
+        </Item>\n
+        <Item>\n
+            <DeviceID></DeviceID>\n
+            <Name></Name>\n
+            <Manufacturer>Hikvision</Manufacturer>\n
+            <Model>AudioOut</Model>\n
+            <Owner>Owner</Owner>\n
+            <CivilCode>110120</CivilCode>\n
+            <Block>Block 1</Block>\n
+            <Address>Address</Address>\n
+            <Parental>0</Parental>\n
+            <ParentID>0200021320136</ParentID>\n
+            <SafetyWay>0</SafetyWay>\n
+            <RegisterWay>1</RegisterWay>\n
+            <CertNum>CertNum 1</CertNum>\n
+            <Certifiable>0</Certifiable>\n
+            <ErrCode>400</ErrCode>\n
+            <EndTime>2024-06-27T13:10:06</EndTime>\n
+            <Secrecy>0</Secrecy>\n
+            <IPAddress>10.255.173.140</IPAddress>\n
+            <Port>5060</Port>\n
+            <Password>Password 1</Password>\n
+            <Status>ON</Status>\n
+            <Info>\n
+                <PTZType>1</PTZType>\n
+            </Info>\n
+        </Item>\n
+    </DeviceList>\n
+</Response>\n
+
+
+

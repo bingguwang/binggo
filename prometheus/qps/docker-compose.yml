@@ -1,0 +1,45 @@
+version: '3.5'
+
+# 服务容器配置
+services:
+  prometheus:
+    image: prom/prometheus:v2.28.1
+    container_name: prometheus
+    environment:
+      # 时区上海 - Time zone Shanghai (Change if needed)
+      TZ: Asia/Shanghai
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    restart: always
+    user: root
+    ports:
+      - 9090:9090
+    networks:
+      - bing
+
+  user-api: # 自定义容器名称
+    build:
+      context: .                  # 指定构建使用的 Dockerfile 文件
+      dockerfile: ./Dockerfile
+    container_name: user-api
+    environment: # 设置环境变量
+      - TZ=Asia/Shanghai
+    privileged: true
+    volumes:
+      - ./data/logDemo/user-api:/var/logDemo
+    ports: # 设置端口映射
+      - "20001:20001"  # 服务api端口
+    stdin_open: true                     # 打开标准输入，可以接受外部输入
+    tty: true
+    networks:
+      - bing
+    restart: always                      # 指定容器退出后的重启策略为始终重启
+
+
+networks:
+  bing:           # 网络
+    driver: bridge    # 桥接模式

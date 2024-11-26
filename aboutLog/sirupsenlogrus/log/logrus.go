@@ -14,7 +14,7 @@ type LogrusLogger struct {
 // Level type
 type Level uint32
 
-// These are the different logging levels. You can set the logging level to log
+// These are the different logging levels. You can set the logging level to logDemo
 // on your instance of logger, obtained with `logrus.New()`.
 const (
 	// PanicLevel level, highest level of severity. Logs and then calls panic with the

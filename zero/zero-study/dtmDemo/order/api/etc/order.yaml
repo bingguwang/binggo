@@ -1,0 +1,20 @@
+Name: Order
+Host: 0.0.0.0
+Port: 8888
+
+
+OrderRpc:
+  Etcd:
+    Hosts:
+      - 192.168.2.130:2379
+    Key: pay.rpc
+    User: root
+    Pass: "123456"
+
+ProductRpc:
+  Etcd:
+    Hosts:
+      - 192.168.2.130:2379
+    Key: product.rpc
+    User: root
+    Pass: "123456"

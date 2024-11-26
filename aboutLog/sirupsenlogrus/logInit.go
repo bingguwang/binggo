@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	logPath       = `./videoGateway.log`
+	logPath       = `./videoGateway.logDemo`
 	logPathPrefix = `./videoGateway`
 )
 
@@ -22,7 +22,7 @@ var files []string
 
 func newLfsHook(reportCaller bool, path string) log.Hook {
 	writer, err := rotatelogs.New(
-		path+".%Y%m%dT%H%M%S.log",
+		path+".%Y%m%dT%H%M%S.logDemo",
 		// WithLinkName为最新的日志建立软连接，以方便随着找到当前日志文件
 		rotatelogs.WithLinkName(logPath),
 
@@ -50,7 +50,7 @@ func newLfsHook(reportCaller bool, path string) log.Hook {
 		log.FatalLevel: writer,
 		log.PanicLevel: writer,
 	}, &MyFormatter{reportCaller: reportCaller})
-	//}, &log.TextFormatter{DisableColors: true})
+	//}, &logDemo.TextFormatter{DisableColors: true})
 
 	return lfsHook
 }

@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  beanstalkd1:
+    image: schickling/beanstalkd
+    container_name: beanstalkd1
+    ports:
+      - "11300:11300"
+    # 貌似只能写死/deployment/docker/notification-beanstalkd-data
+#    volumes:
+#      - /deployment/docker/notification-beanstalkd-data:/data
+
+
+  beanstalkd2:
+    image: schickling/beanstalkd
+    container_name: beanstalkd2
+    ports:
+      - "11301:11300"
+#    volumes:
+#      - /deployment/docker/notification-beanstalkd-data:/data
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
