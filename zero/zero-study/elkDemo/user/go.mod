@@ -1,6 +1,8 @@
 module user
 
-go 1.20
+go 1.21
+
+toolchain go1.21.13
 
 require (
 	github.com/google/martian v2.1.0+incompatible

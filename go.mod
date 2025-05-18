@@ -1,6 +1,8 @@
 module binggo
 
-go 1.20
+go 1.21
+
+toolchain go1.21.13
 
 require (
 	github.com/antchfx/htmlquery v1.3.1

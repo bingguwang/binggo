@@ -7,6 +7,12 @@ import (
 	"time"
 )
 
+/*
+*
+sync.Mutex和 sync.Cond的区别
+sync.Cond 是条件变量, 需要和mutex配合使用
+它允许一个 Goroutine 等待某个条件成立，而其他 Goroutine 可以通知等待者条件已经满足
+*/
 func TestCond1(t *testing.T) {
 	var mu sync.Mutex
 	cond := sync.NewCond(&mu) // 创建一个和该互斥锁关联的cond
@@ -23,7 +29,7 @@ func TestCond1(t *testing.T) {
 		mu.Unlock()
 	}()
 
-	// 等待 ready 状态的 goroutine
+	// 等待 ready 状态的 goroutine， 在被唤醒之前会等待在 cond.Wait()
 	wait := func(id int) {
 		mu.Lock()
 		for !ready {

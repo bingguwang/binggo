@@ -4,7 +4,8 @@ import (
 	"testing"
 )
 
-/**
+/*
+*
 05-30
 
 反转链表
@@ -18,12 +19,12 @@ func TestRsjm(t *testing.T) {
 // 三个指针，一个保证未遍历到的不会丢失，一个维护翻转后的链表，一个用于遍历
 func reverseList(head *ListNode) *ListNode {
 	var pre *ListNode
-	p := head
-	for p != nil { // p==nil时，pre指的就是新的头
-		node := p.Next // 保存cur.next防止丢失
-		p.Next = pre
-		pre = p  // pre往后移动移动
-		p = node // p往后移动移动
+	cur := head
+	for cur != nil { // p==nil时，pre指的就是新的头
+		next := cur.Next // 保存cur.next防止丢失
+		cur.Next = pre
+		pre = cur  // pre往后移动移动
+		cur = next // cur往后移动移动
 	}
 	return pre
 }

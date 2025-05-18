@@ -94,3 +94,39 @@ func TestName2(t *testing.T) {
 
 	wg.Wait()
 }
+
+func TestName22(t *testing.T) {
+	chOdd := make(chan struct{}, 1)
+	chEven := make(chan struct{}, 1)
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go printOdd(chOdd, chEven, &wg)
+	go printEven(chEven, chOdd, &wg)
+
+	// 启动流程
+	chOdd <- struct{}{}
+
+	wg.Wait()
+}
+
+// 打印奇数
+func printOdd(chOdd, chEven chan struct{}, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for i := 1; i <= 100; i += 2 {
+		<-chOdd // 等待 chOdd 的信号
+		fmt.Println(i)
+		chEven <- struct{}{} // 发送信号给 chEven
+	}
+}
+
+// 打印偶数
+func printEven(chEven, chOdd chan struct{}, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for i := 2; i <= 100; i += 2 {
+		<-chEven // 等待 chEven 的信号
+		fmt.Println(i)
+		chOdd <- struct{}{}
+	}
+}

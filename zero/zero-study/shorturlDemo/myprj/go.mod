@@ -1,6 +1,8 @@
 module myprj
 
-go 1.20
+go 1.21
+
+toolchain go1.21.13
 
 require (
 	github.com/zeromicro/go-zero v1.6.5

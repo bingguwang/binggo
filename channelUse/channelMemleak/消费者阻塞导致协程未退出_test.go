@@ -21,7 +21,9 @@ func TestCase2(t *testing.T) {
 		for v := range ch {
 			fmt.Println("消费:", v)
 		}
+		defer fmt.Println("子协程退出")
 	}()
+
 	printCurrentGoroutineNum()
 
 	ch <- 1

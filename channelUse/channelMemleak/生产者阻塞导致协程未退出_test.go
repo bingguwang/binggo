@@ -17,11 +17,11 @@ import (
 消费者退出，导致生产者阻塞
 */
 func TestCase1(t *testing.T) {
-	ch := make(chan int)
+	ch := make(chan int, 1)
 
 	go func() {
 		time.Sleep(time.Second) // 消费者退出之后，生产者还在sleep
-		ch <- 1                 // 消费者退出，这里阻塞
+		ch <- 1                 // 消费者退出，这里阻塞，塞不进去
 	}()
 	printCurrentGoroutineNum()
 

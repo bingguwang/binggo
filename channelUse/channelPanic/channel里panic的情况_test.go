@@ -44,5 +44,5 @@ func TestCase2(t *testing.T) {
 		close(ch)
 	}()
 	time.Sleep(2 * time.Second)
-	close(ch)
+	close(ch) // 此处关闭时会出现panic
 }

@@ -10,8 +10,8 @@ type Task func()
 
 // GoroutinePool represents a pool of goroutines to execute tasks
 type GoroutinePool struct {
-	maxGoroutines int
-	tasks         chan Task
+	maxGoroutines int       // 协程池容量
+	tasks         chan Task // 任务队列
 	wg            sync.WaitGroup
 	active        int // 当前运行的协程数
 	lock          sync.Mutex
@@ -35,13 +35,13 @@ func (p *GoroutinePool) worker() {
 	for task := range p.tasks {
 		task() // 拿到任务就执行
 		p.lock.Lock()
-		p.active--
+		p.active-- // 任务执行完当前指向协程数减1
 		p.cond.Signal()
 		p.lock.Unlock()
 	}
 }
 
-// Submit adds a task to the pool
+// Submit 提交任务到池
 func (p *GoroutinePool) Submit(task Task) {
 	p.lock.Lock()
 	if p.active < p.maxGoroutines {
