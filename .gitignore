@@ -1,0 +1,8 @@
+conf/
+tmp/
+log/
+swagger/
+.vscode/
+*.exe
+*_test.go
+bin/
